@@ -406,7 +406,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Print(result)
 
 	case "labels":
 		root, err := tlog.RequireTlog()

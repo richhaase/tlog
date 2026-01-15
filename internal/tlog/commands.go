@@ -488,63 +488,46 @@ func GraphToMermaid(graph Graph, tasks map[string]*Task) string {
 }
 
 // CmdPrime generates context for AI agents
-func CmdPrime(root string) (map[string]interface{}, error) {
+func CmdPrime(root string) (string, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	tasks := ComputeState(events)
 	ready := GetReadyTasks(tasks)
 
-	// Get recent completed (last 5)
-	var completed []*Task
-	for _, task := range tasks {
-		if task.Status == StatusDone {
-			completed = append(completed, task)
+	var sb strings.Builder
+
+	sb.WriteString("tlog tracks tasks for AI agents in this project.\n\n")
+
+	sb.WriteString(`Workflow:
+1. claim a task before starting (prevents duplicate work)
+2. done when finished
+3. unclaim if you hit a blocker and need to release it
+
+Commands:
+  tlog ready           list tasks ready to work on
+  tlog claim <id>      claim a task and start working
+  tlog done <id>       mark task complete
+  tlog unclaim <id>    release task if blocked
+  tlog create "title"  create a new task
+`)
+
+	if len(ready) > 0 {
+		sb.WriteString("\nReady tasks:\n")
+		for _, t := range ready {
+			labels := ""
+			if len(t.Labels) > 0 {
+				labels = " [" + strings.Join(t.Labels, ", ") + "]"
+			}
+			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, t.Title, labels))
 		}
-	}
-	sort.Slice(completed, func(i, j int) bool {
-		return completed[i].Updated.After(completed[j].Updated)
-	})
-	if len(completed) > 5 {
-		completed = completed[:5]
+	} else {
+		sb.WriteString("\nNo tasks ready. Use 'tlog create \"title\"' to create one.\n")
 	}
 
-	// Get blocked tasks
-	var blocked []*Task
-	readyIDs := make(map[string]bool)
-	for _, t := range ready {
-		readyIDs[t.ID] = true
-	}
-	for _, task := range tasks {
-		if task.Status == StatusOpen && !readyIDs[task.ID] {
-			blocked = append(blocked, task)
-		}
-	}
-
-	// Build summary
-	openCount := 0
-	doneCount := 0
-	for _, task := range tasks {
-		if task.Status == StatusOpen {
-			openCount++
-		} else {
-			doneCount++
-		}
-	}
-
-	summary := fmt.Sprintf("%d open, %d done, %d ready", openCount, doneCount, len(ready))
-
-	instructions := "Use 'tlog claim <id>' before starting work on a task. This marks the task as in_progress and signals to other agents that work is underway."
-
-	return map[string]interface{}{
-		"instructions":     instructions,
-		"summary":          summary,
-		"ready_tasks":      ready,
-		"recent_completed": completed,
-		"blocked_tasks":    blocked,
-	}, nil
+	return sb.String(), nil
 }
 
 // CmdLabels shows labels in use and recommended conventions
