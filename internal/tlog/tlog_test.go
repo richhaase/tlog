@@ -143,12 +143,6 @@ func TestInitializeAndStorage(t *testing.T) {
 		t.Error(".tlog directory should exist")
 	}
 
-	// Check config.json exists
-	configPath := filepath.Join(tlogPath, ConfigFile)
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Error("config.json should exist")
-	}
-
 	// Test append and load events
 	event := Event{
 		ID:        "tl-test",

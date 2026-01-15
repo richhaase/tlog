@@ -14,10 +14,8 @@ import (
 )
 
 const (
-	TlogDir    = ".tlog"
-	ConfigFile = "config.json"
-	EventsDir  = "events"
-	Version    = "1"
+	TlogDir   = ".tlog"
+	EventsDir = "events"
 )
 
 // GetTlogRoot searches up from cwd to find .tlog directory
@@ -156,15 +154,5 @@ func Initialize(path string) error {
 		return fmt.Errorf("tlog already initialized")
 	}
 
-	if err := os.MkdirAll(filepath.Join(tlogPath, EventsDir), 0755); err != nil {
-		return err
-	}
-
-	config := Config{Version: Version}
-	configData, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(filepath.Join(tlogPath, ConfigFile), configData, 0644)
+	return os.MkdirAll(filepath.Join(tlogPath, EventsDir), 0755)
 }

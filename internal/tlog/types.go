@@ -53,11 +53,6 @@ type Task struct {
 	Notes   string     `json:"notes"`
 }
 
-// Config represents the .tlog/config.json structure
-type Config struct {
-	Version string `json:"version"`
-}
-
 // GraphNode represents a node in the dependency graph
 type GraphNode struct {
 	ID     string     `json:"id"`
