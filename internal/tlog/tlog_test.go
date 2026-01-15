@@ -34,7 +34,6 @@ func TestComputeState(t *testing.T) {
 			Title:     "Task 1",
 			Status:    StatusOpen,
 			Deps:      []string{},
-			Blocks:    []string{},
 		},
 		{
 			ID:        "tl-002",
@@ -43,7 +42,6 @@ func TestComputeState(t *testing.T) {
 			Title:     "Task 2",
 			Status:    StatusOpen,
 			Deps:      []string{"tl-001"},
-			Blocks:    []string{},
 		},
 		{
 			ID:        "tl-001",
@@ -81,7 +79,6 @@ func TestGetReadyTasks(t *testing.T) {
 			Title:     "Task 1",
 			Status:    StatusOpen,
 			Deps:      []string{},
-			Blocks:    []string{},
 		},
 		{
 			ID:        "tl-002",
@@ -90,7 +87,6 @@ func TestGetReadyTasks(t *testing.T) {
 			Title:     "Task 2",
 			Status:    StatusOpen,
 			Deps:      []string{"tl-001"},
-			Blocks:    []string{},
 		},
 	}
 
@@ -151,7 +147,6 @@ func TestInitializeAndStorage(t *testing.T) {
 		Title:     "Test task",
 		Status:    StatusOpen,
 		Deps:      []string{},
-		Blocks:    []string{},
 	}
 
 	err = AppendEvent(tlogPath, event)
@@ -183,7 +178,6 @@ func TestDepEvents(t *testing.T) {
 			Title:     "Task 1",
 			Status:    StatusOpen,
 			Deps:      []string{},
-			Blocks:    []string{},
 		},
 		{
 			ID:        "tl-002",
@@ -192,7 +186,6 @@ func TestDepEvents(t *testing.T) {
 			Title:     "Task 2",
 			Status:    StatusOpen,
 			Deps:      []string{},
-			Blocks:    []string{},
 		},
 		{
 			ID:        "tl-002",
@@ -238,7 +231,6 @@ func TestBuildDependencyGraph(t *testing.T) {
 			Title:     "Task 1",
 			Status:    StatusOpen,
 			Deps:      []string{},
-			Blocks:    []string{"tl-002"},
 		},
 		{
 			ID:        "tl-002",
@@ -247,7 +239,6 @@ func TestBuildDependencyGraph(t *testing.T) {
 			Title:     "Task 2",
 			Status:    StatusOpen,
 			Deps:      []string{"tl-001"},
-			Blocks:    []string{},
 		},
 	}
 
@@ -258,8 +249,8 @@ func TestBuildDependencyGraph(t *testing.T) {
 		t.Errorf("Expected 2 nodes, got %d", len(graph.Nodes))
 	}
 
-	// Should have dep edge and block edge
-	if len(graph.Edges) != 2 {
-		t.Errorf("Expected 2 edges, got %d", len(graph.Edges))
+	// Should have one dep edge
+	if len(graph.Edges) != 1 {
+		t.Errorf("Expected 1 edge, got %d", len(graph.Edges))
 	}
 }

@@ -11,7 +11,6 @@ const (
 	EventCreate EventType = "create"
 	EventStatus EventType = "status"
 	EventDep    EventType = "dep"
-	EventBlock  EventType = "block"
 	EventUpdate EventType = "update"
 )
 
@@ -89,14 +88,12 @@ type Event struct {
 	Status      TaskStatus `json:"status,omitempty"`
 	Resolution  Resolution `json:"resolution,omitempty"`
 	Priority    *Priority  `json:"priority,omitempty"` // Pointer to distinguish unset from zero
-	Deps        []string   `json:"deps,omitempty"`
-	Blocks      []string   `json:"blocks,omitempty"`
-	Labels      []string   `json:"labels,omitempty"`
+	Deps   []string `json:"deps,omitempty"`
+	Labels []string `json:"labels,omitempty"`
 	Description string     `json:"description,omitempty"` // Mutable: what is this task
 	Notes       string     `json:"notes,omitempty"`       // Append-only: what happened
-	// For dep/block events
+	// For dep events
 	Dep    string `json:"dep,omitempty"`
-	Block  string `json:"block,omitempty"`
 	Action string `json:"action,omitempty"` // "add" or "remove"
 }
 
@@ -108,7 +105,6 @@ type Task struct {
 	Resolution  Resolution `json:"resolution,omitempty"`
 	Priority    Priority   `json:"priority"`
 	Deps        []string   `json:"deps"`
-	Blocks      []string   `json:"blocks"`
 	Created     time.Time  `json:"created"`
 	Updated     time.Time  `json:"updated"`
 	Labels      []string   `json:"labels"`
@@ -127,7 +123,7 @@ type GraphNode struct {
 type GraphEdge struct {
 	From string `json:"from"`
 	To   string `json:"to"`
-	Type string `json:"type"` // "depends_on" or "blocks"
+	Type string `json:"type"` // "depends_on"
 }
 
 // Graph represents the full dependency graph

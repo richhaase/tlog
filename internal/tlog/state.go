@@ -19,7 +19,6 @@ func ComputeState(events []Event) map[string]*Task {
 				Status:      StatusOpen,
 				Priority:    priority,
 				Deps:        event.Deps,
-				Blocks:      event.Blocks,
 				Created:     event.Timestamp,
 				Updated:     event.Timestamp,
 				Labels:      event.Labels,
@@ -28,9 +27,6 @@ func ComputeState(events []Event) map[string]*Task {
 			}
 			if tasks[event.ID].Deps == nil {
 				tasks[event.ID].Deps = []string{}
-			}
-			if tasks[event.ID].Blocks == nil {
-				tasks[event.ID].Blocks = []string{}
 			}
 			if tasks[event.ID].Labels == nil {
 				tasks[event.ID].Labels = []string{}
@@ -53,17 +49,6 @@ func ComputeState(events []Event) map[string]*Task {
 					task.Deps = appendUnique(task.Deps, event.Dep)
 				case "remove":
 					task.Deps = removeItem(task.Deps, event.Dep)
-				}
-				task.Updated = event.Timestamp
-			}
-
-		case EventBlock:
-			if task, ok := tasks[event.ID]; ok {
-				switch event.Action {
-				case "add":
-					task.Blocks = appendUnique(task.Blocks, event.Block)
-				case "remove":
-					task.Blocks = removeItem(task.Blocks, event.Block)
 				}
 				task.Updated = event.Timestamp
 			}
@@ -93,16 +78,8 @@ func ComputeState(events []Event) map[string]*Task {
 	return tasks
 }
 
-// GetReadyTasks returns tasks that are open, have all deps done, and are not blocked
+// GetReadyTasks returns tasks that are open and have all deps done
 func GetReadyTasks(tasks map[string]*Task) []*Task {
-	// Build reverse block map: which tasks are blocked by which
-	blockedBy := make(map[string][]string)
-	for _, task := range tasks {
-		for _, blocksID := range task.Blocks {
-			blockedBy[blocksID] = append(blockedBy[blocksID], task.ID)
-		}
-	}
-
 	var ready []*Task
 	for _, task := range tasks {
 		if task.Status != StatusOpen {
@@ -120,20 +97,6 @@ func GetReadyTasks(tasks map[string]*Task) []*Task {
 			}
 		}
 		if !allDepsDone {
-			continue
-		}
-
-		// Check if blocked by any non-done task (open or in_progress)
-		isBlocked := false
-		for _, blockerID := range blockedBy[task.ID] {
-			if blocker, ok := tasks[blockerID]; ok {
-				if blocker.Status != StatusDone {
-					isBlocked = true
-					break
-				}
-			}
-		}
-		if isBlocked {
 			continue
 		}
 
@@ -160,14 +123,6 @@ func BuildDependencyGraph(tasks map[string]*Task) Graph {
 				From: depID,
 				To:   task.ID,
 				Type: "depends_on",
-			})
-		}
-
-		for _, blockID := range task.Blocks {
-			edges = append(edges, GraphEdge{
-				From: task.ID,
-				To:   blockID,
-				Type: "blocks",
 			})
 		}
 	}

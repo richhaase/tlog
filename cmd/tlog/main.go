@@ -54,7 +54,6 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			title := args[0]
 			deps, _ := cmd.Flags().GetStringSlice("dep")
-			blocks, _ := cmd.Flags().GetStringSlice("blocks")
 			labels, _ := cmd.Flags().GetStringSlice("label")
 			description, _ := cmd.Flags().GetString("description")
 			notes, _ := cmd.Flags().GetString("notes")
@@ -70,7 +69,7 @@ func init() {
 			if err != nil {
 				exitError(err.Error())
 			}
-			result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes, priority)
+			result, err := tlog.CmdCreate(root, title, deps, labels, description, notes, priority)
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -78,7 +77,6 @@ func init() {
 		},
 	}
 	createCmd.Flags().StringSlice("dep", nil, "Add dependency (repeatable)")
-	createCmd.Flags().StringSlice("blocks", nil, "Add blocking relationship (repeatable)")
 	createCmd.Flags().StringSlice("label", nil, "Add label (repeatable)")
 	createCmd.Flags().String("description", "", "Set description (what this task is)")
 	createCmd.Flags().String("notes", "", "Add notes (what happened)")
@@ -357,38 +355,6 @@ func init() {
 	}
 	depCmd.Flags().Bool("remove", false, "Remove instead of add")
 	rootCmd.AddCommand(depCmd)
-
-	// Block command
-	blockCmd := &cobra.Command{
-		Use:   "block <id> <block-id>",
-		Short: "Add blocking relationship",
-		Args:  cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
-			remove, _ := cmd.Flags().GetBool("remove")
-			action := "add"
-			if remove {
-				action = "remove"
-			}
-
-			root, err := tlog.RequireTlog()
-			if err != nil {
-				exitError(err.Error())
-			}
-			id := resolveID(root, args[0])
-			blockID := resolveID(root, args[1])
-			result, err := tlog.CmdBlock(root, id, blockID, action)
-			if err != nil {
-				exitError(err.Error())
-			}
-			if action == "add" {
-				fmt.Printf("Block added: %s blocks %s\n", result["id"], result["blocks"])
-			} else {
-				fmt.Printf("Block removed: %s blocks %s\n", result["id"], result["blocks"])
-			}
-		},
-	}
-	blockCmd.Flags().Bool("remove", false, "Remove instead of add")
-	rootCmd.AddCommand(blockCmd)
 
 	// Graph command
 	rootCmd.AddCommand(&cobra.Command{
