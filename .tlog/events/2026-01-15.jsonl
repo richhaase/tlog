@@ -148,3 +148,5 @@
 {"id":"tl-8ea3088b","ts":"2026-01-15T20:50:40.832691Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-b9485efe","ts":"2026-01-15T20:50:40.838398Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-a0a486f1","ts":"2026-01-15T20:51:21.036887Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-4d57095c","ts":"2026-01-15T21:04:28.944945Z","type":"status","status":"in_progress"}
+{"id":"tl-4d57095c","ts":"2026-01-15T21:12:00.421343Z","type":"status","status":"open","notes":"Failed attempt: converted to text but output is just a flat dump of dependency lines - not a readable graph visualization. Need to design proper text-based graph rendering that shows structure."}
