@@ -62,7 +62,7 @@ Commands:
     --remove              Remove instead of add
   graph [--format <f>]    Show dependency graph (json|mermaid)
   prime                   Get AI agent context
-  sync [--message <m>]    Commit .tlog to git
+  sync [-m|--message <m>] Commit .tlog to git
   version                 Show version information`)
 	os.Exit(0)
 }
@@ -344,7 +344,7 @@ func main() {
 	case "sync":
 		message := ""
 		for i := 0; i < len(args); i++ {
-			if args[i] == "--message" && i+1 < len(args) {
+			if (args[i] == "--message" || args[i] == "-m") && i+1 < len(args) {
 				message = args[i+1]
 				i++
 			}
