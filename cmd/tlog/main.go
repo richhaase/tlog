@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -9,13 +8,8 @@ import (
 	"github.com/richhaase/tlog/internal/tlog"
 )
 
-func outputJSON(v interface{}) {
-	data, _ := json.MarshalIndent(v, "", "  ")
-	fmt.Println(string(data))
-}
-
-func errorJSON(msg string) {
-	outputJSON(map[string]string{"error": msg})
+func exitError(msg string) {
+	fmt.Fprintf(os.Stderr, "error: %s\n", msg)
 	os.Exit(1)
 }
 
@@ -23,12 +17,12 @@ func errorJSON(msg string) {
 func resolveID(root, prefix string) string {
 	events, err := tlog.LoadAllEvents(root)
 	if err != nil {
-		errorJSON(err.Error())
+		exitError(err.Error())
 	}
 	tasks := tlog.ComputeState(events)
 	id, err := tlog.ResolveID(tasks, prefix)
 	if err != nil {
-		errorJSON(err.Error())
+		exitError(err.Error())
 	}
 	return id
 }
@@ -96,13 +90,13 @@ func main() {
 		cwd, _ := os.Getwd()
 		result, err := tlog.CmdInit(cwd)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Initialized: %s\n", result["path"])
 
 	case "create":
 		if len(args) < 1 {
-			errorJSON("create requires a title")
+			exitError("create requires a title")
 		}
 		title := args[0]
 		var deps, blocks, labels []string
@@ -140,21 +134,21 @@ func main() {
 
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Created: %s %q\n", result["id"], result["title"])
 
 	case "done":
 		if len(args) < 1 {
-			errorJSON("done requires a task ID")
+			exitError("done requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 
@@ -176,17 +170,17 @@ func main() {
 
 		result, err := tlog.CmdDone(root, id, resolution, notes)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Done: %s (%s)\n", result["id"], result["resolution"])
 
 	case "claim":
 		if len(args) < 1 {
-			errorJSON("claim requires a task ID")
+			exitError("claim requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		var notes string
@@ -198,17 +192,17 @@ func main() {
 		}
 		result, err := tlog.CmdClaim(root, id, notes)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Claimed: %s\n", result["id"])
 
 	case "unclaim":
 		if len(args) < 1 {
-			errorJSON("unclaim requires a task ID")
+			exitError("unclaim requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		var notes string
@@ -220,32 +214,32 @@ func main() {
 		}
 		result, err := tlog.CmdUnclaim(root, id, notes)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Unclaimed: %s\n", result["id"])
 
 	case "reopen":
 		if len(args) < 1 {
-			errorJSON("reopen requires a task ID")
+			exitError("reopen requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		result, err := tlog.CmdReopen(root, id)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Reopened: %s\n", result["id"])
 
 	case "update":
 		if len(args) < 1 {
-			errorJSON("update requires a task ID")
+			exitError("update requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		var title, description, notes string
@@ -278,7 +272,7 @@ func main() {
 
 		result, err := tlog.CmdUpdate(root, id, title, description, notes, labels)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Printf("Updated: %s\n", result["id"])
 
@@ -297,11 +291,11 @@ func main() {
 
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdList(root, status, label)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		tasks := result["tasks"].([]*tlog.Task)
 		if len(tasks) == 0 {
@@ -318,16 +312,16 @@ func main() {
 
 	case "show":
 		if len(args) < 1 {
-			errorJSON("show requires a task ID")
+			exitError("show requires a task ID")
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		result, err := tlog.CmdShow(root, id)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		task := result["task"].(*tlog.Task)
 		fmt.Printf("%s: %s\n", task.ID, task.Title)
@@ -352,11 +346,11 @@ func main() {
 	case "ready":
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdReady(root)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		tasks := result["tasks"].([]*tlog.Task)
 		if len(tasks) == 0 {
@@ -373,7 +367,7 @@ func main() {
 
 	case "dep":
 		if len(args) < 2 {
-			errorJSON("dep requires task ID and dependency ID")
+			exitError("dep requires task ID and dependency ID")
 		}
 		action := "add"
 		for _, a := range args {
@@ -383,13 +377,13 @@ func main() {
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		depID := resolveID(root, args[1])
 		result, err := tlog.CmdDep(root, id, depID, action)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		if action == "add" {
 			fmt.Printf("Dep added: %s -> %s\n", result["id"], result["dep"])
@@ -399,7 +393,7 @@ func main() {
 
 	case "block":
 		if len(args) < 2 {
-			errorJSON("block requires task ID and block ID")
+			exitError("block requires task ID and block ID")
 		}
 		action := "add"
 		for _, a := range args {
@@ -409,13 +403,13 @@ func main() {
 		}
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		id := resolveID(root, args[0])
 		blockID := resolveID(root, args[1])
 		result, err := tlog.CmdBlock(root, id, blockID, action)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		if action == "add" {
 			fmt.Printf("Block added: %s blocks %s\n", result["id"], result["blocks"])
@@ -426,33 +420,33 @@ func main() {
 	case "graph":
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdGraph(root)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Print(result)
 
 	case "prime":
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdPrime(root)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		fmt.Print(result)
 
 	case "labels":
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdLabels(root)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		inUse := result["in_use"].([]string)
 		if len(inUse) > 0 {
@@ -475,15 +469,15 @@ func main() {
 
 		root, err := tlog.RequireTlog()
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
 		result, err := tlog.CmdSync(root, message)
 		if err != nil {
-			errorJSON(err.Error())
+			exitError(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Synced: %s\n", result["message"])
 
 	default:
-		errorJSON(fmt.Sprintf("unknown command: %s", cmd))
+		exitError(fmt.Sprintf("unknown command: %s", cmd))
 	}
 }
