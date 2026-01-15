@@ -1,5 +1,6 @@
 # Build artifacts
 bin/
+dist/
 
 # Test coverage
 coverage.out

@@ -106,3 +106,5 @@
 {"id":"tl-ce6ff8b4","ts":"2026-01-15T18:59:10.323811Z","type":"status","status":"in_progress"}
 {"id":"tl-ce6ff8b4","ts":"2026-01-15T19:01:42.31394Z","type":"status","status":"done","resolution":"completed"}
 {"id":"tl-21907583","ts":"2026-01-15T19:10:48.967222Z","type":"create","title":"Add goreleaser for automated releases","status":"open","labels":["priority:low"],"description":"Automate GitHub releases with pre-built binaries on tag push","notes":"Would build multi-platform binaries and create GitHub releases automatically. Low priority since go install works fine for agent users."}
+{"id":"tl-21907583","ts":"2026-01-15T19:17:39.642278Z","type":"status","status":"in_progress"}
+{"id":"tl-21907583","ts":"2026-01-15T19:21:07.626861Z","type":"status","status":"done","resolution":"completed"}
