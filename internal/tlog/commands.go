@@ -512,6 +512,10 @@ Commands:
   tlog done <id>       mark task complete
   tlog unclaim <id>    release task if blocked
   tlog create "title"  create a new task
+
+Tips:
+  --description  sets what the task is (mutable, overwrites)
+  --notes        logs what happened (append-only)
 `)
 
 	if len(ready) > 0 {
