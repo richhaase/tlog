@@ -12,7 +12,7 @@ Task tracking for AI coding agents. Helps humans and agents collaborate on work.
 ## Install
 
 ```bash
-go install github.com/rdh/tlog/cmd/tlog@latest
+go install github.com/richhaase/tlog/cmd/tlog@latest
 ```
 
 ## Usage
@@ -28,6 +28,10 @@ Add to your `CLAUDE.md` or `AGENTS.md`:
 ```markdown
 This project uses tlog for task tracking. Run `tlog prime` to get started.
 ```
+
+## Inspiration
+
+Heavily inspired by [steveyegge/beads](https://github.com/steveyegge/beads), which is fantastic. tlog aims to be a lighter-weight alternative.
 
 ## License
 
