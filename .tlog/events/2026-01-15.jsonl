@@ -87,3 +87,7 @@
 {"id":"tl-b1ad895f","ts":"2026-01-15T17:59:43.800985Z","type":"create","title":"Update prime command to include explicit instructions to use claim before working an issue","status":"open","description":"The prime output should guide agents to claim tasks before starting work on them"}
 {"id":"tl-b1ad895f","ts":"2026-01-15T18:00:19.048531Z","type":"status","status":"in_progress"}
 {"id":"tl-b1ad895f","ts":"2026-01-15T18:03:28.878442Z","type":"status","status":"done","resolution":"completed","notes":"Added instructions field to PrimeOutput struct and CmdPrime function"}
+{"id":"tl-acaec5fe","ts":"2026-01-15T18:11:39.779323Z","type":"status","status":"done","resolution":"wontfix","notes":"Premature - no demonstrated need, bash chaining workaround exists, violates Unix philosophy"}
+{"id":"tl-46689ba6","ts":"2026-01-15T18:11:42.686431Z","type":"status","status":"done","resolution":"wontfix","notes":"Parent task closed as wontfix"}
+{"id":"tl-5ed56b6f","ts":"2026-01-15T18:11:44.284727Z","type":"status","status":"done","resolution":"wontfix","notes":"Parent task closed as wontfix"}
+{"id":"tl-fbe0ab3d","ts":"2026-01-15T18:11:45.904236Z","type":"status","status":"done","resolution":"wontfix","notes":"Parent task closed as wontfix"}
