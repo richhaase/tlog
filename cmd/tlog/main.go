@@ -45,7 +45,8 @@ Commands:
     --remove              Remove instead of add
   graph [--format <f>]    Show dependency graph (json|mermaid)
   prime                   Get AI agent context
-  sync [--message <m>]    Commit .tlog to git`)
+  sync [--message <m>]    Commit .tlog to git
+  version                 Show version information`)
 	os.Exit(0)
 }
 
@@ -60,6 +61,9 @@ func main() {
 	switch cmd {
 	case "help", "-h", "--help":
 		usage()
+
+	case "version", "-v", "--version":
+		fmt.Println(buildVersionString())
 
 	case "init":
 		cwd, _ := os.Getwd()
