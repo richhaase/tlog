@@ -48,7 +48,9 @@ Commands:
     --wontfix             Resolution: wontfix
     --duplicate           Resolution: duplicate
     --note <text>         Add closing note
-  reopen <id>             Reopen a completed task
+  claim <id>              Mark task as in_progress
+    --note <text>         Add note
+  reopen <id>             Reopen task (from done or in_progress)
   update <id>             Update task
     --title <text>        New title
     --notes <text>        New notes
@@ -161,6 +163,28 @@ func main() {
 		}
 
 		result, err := tlog.CmdDone(root, id, resolution, notes)
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		outputJSON(result)
+
+	case "claim":
+		if len(args) < 1 {
+			errorJSON("claim requires a task ID")
+		}
+		root, err := tlog.RequireTlog()
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		id := resolveID(root, args[0])
+		var notes string
+		for i := 1; i < len(args); i++ {
+			if args[i] == "--note" && i+1 < len(args) {
+				notes = args[i+1]
+				i++
+			}
+		}
+		result, err := tlog.CmdClaim(root, id, notes)
 		if err != nil {
 			errorJSON(err.Error())
 		}

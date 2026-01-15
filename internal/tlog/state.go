@@ -109,11 +109,11 @@ func GetReadyTasks(tasks map[string]*Task) []*Task {
 			continue
 		}
 
-		// Check if blocked by any open task
+		// Check if blocked by any non-done task (open or in_progress)
 		isBlocked := false
 		for _, blockerID := range blockedBy[task.ID] {
 			if blocker, ok := tasks[blockerID]; ok {
-				if blocker.Status == StatusOpen {
+				if blocker.Status != StatusDone {
 					isBlocked = true
 					break
 				}

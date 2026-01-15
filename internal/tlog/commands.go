@@ -99,7 +99,44 @@ func CmdDone(root, id string, resolution Resolution, notes string) (map[string]i
 	}, nil
 }
 
-// CmdReopen reopens a completed task
+// CmdClaim marks a task as in_progress
+func CmdClaim(root, id, notes string) (map[string]interface{}, error) {
+	events, err := LoadAllEvents(root)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := ComputeState(events)
+	task, ok := tasks[id]
+	if !ok {
+		return nil, fmt.Errorf("task not found: %s", id)
+	}
+
+	if task.Status != StatusOpen {
+		return nil, fmt.Errorf("can only claim open tasks, task is %s", task.Status)
+	}
+
+	now := NowISO()
+	event := Event{
+		ID:        id,
+		Timestamp: now,
+		Type:      EventStatus,
+		Status:    StatusInProgress,
+		Notes:     notes,
+	}
+
+	if err := AppendEvent(root, event); err != nil {
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"id":      id,
+		"status":  StatusInProgress,
+		"claimed": now,
+	}, nil
+}
+
+// CmdReopen reopens a task (from done or in_progress back to open)
 func CmdReopen(root, id string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
@@ -175,6 +212,7 @@ func CmdList(root string, statusFilter string) (map[string]interface{}, error) {
 	for _, task := range tasks {
 		if statusFilter == "all" ||
 			(statusFilter == "open" && task.Status == StatusOpen) ||
+			(statusFilter == "in_progress" && task.Status == StatusInProgress) ||
 			(statusFilter == "done" && task.Status == StatusDone) {
 			taskList = append(taskList, task)
 		}
@@ -371,9 +409,11 @@ func GraphToMermaid(graph Graph, tasks map[string]*Task) string {
 
 	// Write nodes
 	for _, node := range graph.Nodes {
-		status := "○"
-		if node.Status == StatusDone {
-			status = "●"
+		status := "○" // open
+		if node.Status == StatusInProgress {
+			status = "◐" // in_progress
+		} else if node.Status == StatusDone {
+			status = "●" // done
 		}
 		title := node.Title
 		if len(title) > 30 {

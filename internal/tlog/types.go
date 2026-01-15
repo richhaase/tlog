@@ -19,8 +19,9 @@ const (
 type TaskStatus string
 
 const (
-	StatusOpen TaskStatus = "open"
-	StatusDone TaskStatus = "done"
+	StatusOpen       TaskStatus = "open"
+	StatusInProgress TaskStatus = "in_progress"
+	StatusDone       TaskStatus = "done"
 )
 
 // Resolution represents why a task was closed
