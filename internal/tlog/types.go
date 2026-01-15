@@ -89,6 +89,7 @@ type Graph struct {
 
 // PrimeOutput represents the output of the prime command
 type PrimeOutput struct {
+	Instructions    string `json:"instructions"`
 	Summary         string `json:"summary"`
 	ReadyTasks      []Task `json:"ready_tasks"`
 	RecentCompleted []Task `json:"recent_completed"`

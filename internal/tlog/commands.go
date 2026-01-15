@@ -481,7 +481,10 @@ func CmdPrime(root string) (map[string]interface{}, error) {
 
 	summary := fmt.Sprintf("%d open, %d done, %d ready", openCount, doneCount, len(ready))
 
+	instructions := "Use 'tlog claim <id>' before starting work on a task. This marks the task as in_progress and signals to other agents that work is underway."
+
 	return map[string]interface{}{
+		"instructions":     instructions,
 		"summary":          summary,
 		"ready_tasks":      ready,
 		"recent_completed": completed,

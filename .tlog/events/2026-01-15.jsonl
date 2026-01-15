@@ -84,3 +84,6 @@
 {"id":"tl-56290380","ts":"2026-01-15T16:22:00.190599Z","type":"status","status":"done","resolution":"completed","notes":"Update command: --description overwrites, --notes appends"}
 {"id":"tl-98df0a60","ts":"2026-01-15T16:22:01.457366Z","type":"status","status":"done","resolution":"completed","notes":"Show output displays both description and notes fields"}
 {"id":"tl-67ef336e","ts":"2026-01-15T16:22:03.123462Z","type":"status","status":"done","resolution":"completed","notes":"Existing tests pass, manual testing verified all semantics"}
+{"id":"tl-b1ad895f","ts":"2026-01-15T17:59:43.800985Z","type":"create","title":"Update prime command to include explicit instructions to use claim before working an issue","status":"open","description":"The prime output should guide agents to claim tasks before starting work on them"}
+{"id":"tl-b1ad895f","ts":"2026-01-15T18:00:19.048531Z","type":"status","status":"in_progress"}
+{"id":"tl-b1ad895f","ts":"2026-01-15T18:03:28.878442Z","type":"status","status":"done","resolution":"completed","notes":"Added instructions field to PrimeOutput struct and CmdPrime function"}
