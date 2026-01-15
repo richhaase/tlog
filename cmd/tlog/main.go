@@ -57,7 +57,7 @@ Commands:
     --description <text>  Set description (overwrites)
     --notes <text>        Append notes
     --label <label>       Set labels (repeatable)
-  list [--status <s>]     List tasks (open|done|all, default: open)
+  list [--status <s>]     List tasks (open|in_progress|done|all, default: open)
   show <id>               Show task details
   ready                   List tasks ready to work on
   dep <id> <dep-id>       Add dependency
