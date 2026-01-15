@@ -11,6 +11,18 @@ An AI-first task tracker with dependency management. Inspired by [Steve Yegge's 
 
 ## Installation
 
+### Go (recommended)
+
+```bash
+# Install
+go install github.com/rdh/tlog/cmd/tlog@latest
+
+# Or build from source
+go build -o tlog ./cmd/tlog
+```
+
+### Python
+
 ```bash
 # With pip
 pip install -e .
