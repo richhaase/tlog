@@ -6,14 +6,476 @@ import (
 	"strings"
 
 	"github.com/richhaase/tlog/internal/tlog"
+	"github.com/spf13/cobra"
 )
+
+var rootCmd = &cobra.Command{
+	Use:   "tlog",
+	Short: "Append-only task tracking for AI agents",
+	Long:  `tlog - append-only task tracking for AI agents`,
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	// Version command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:     "version",
+		Aliases: []string{"v"},
+		Short:   "Show version information",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(buildVersionString())
+		},
+	})
+
+	// Init command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "init",
+		Short: "Initialize tlog in current directory",
+		Run: func(cmd *cobra.Command, args []string) {
+			cwd, _ := os.Getwd()
+			result, err := tlog.CmdInit(cwd)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Initialized: %s\n", result["path"])
+		},
+	})
+
+	// Create command
+	createCmd := &cobra.Command{
+		Use:   "create <title>",
+		Short: "Create a new task",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			title := args[0]
+			deps, _ := cmd.Flags().GetStringSlice("dep")
+			blocks, _ := cmd.Flags().GetStringSlice("blocks")
+			labels, _ := cmd.Flags().GetStringSlice("label")
+			description, _ := cmd.Flags().GetString("description")
+			notes, _ := cmd.Flags().GetString("notes")
+			priorityStr, _ := cmd.Flags().GetString("priority")
+
+			var priority *tlog.Priority
+			if priorityStr != "" {
+				p := tlog.ParsePriority(priorityStr)
+				priority = &p
+			}
+
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes, priority)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Created: %s %q\n", result["id"], result["title"])
+		},
+	}
+	createCmd.Flags().StringSlice("dep", nil, "Add dependency (repeatable)")
+	createCmd.Flags().StringSlice("blocks", nil, "Add blocking relationship (repeatable)")
+	createCmd.Flags().StringSlice("label", nil, "Add label (repeatable)")
+	createCmd.Flags().String("description", "", "Set description (what this task is)")
+	createCmd.Flags().String("notes", "", "Add notes (what happened)")
+	createCmd.Flags().String("priority", "", "Set priority (critical|high|medium|low|backlog)")
+	rootCmd.AddCommand(createCmd)
+
+	// Done command
+	doneCmd := &cobra.Command{
+		Use:   "done <id>",
+		Short: "Mark task as done",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+
+			var resolution tlog.Resolution
+			if wontfix, _ := cmd.Flags().GetBool("wontfix"); wontfix {
+				resolution = tlog.ResolutionWontfix
+			} else if duplicate, _ := cmd.Flags().GetBool("duplicate"); duplicate {
+				resolution = tlog.ResolutionDuplicate
+			}
+			notes, _ := cmd.Flags().GetString("note")
+
+			result, err := tlog.CmdDone(root, id, resolution, notes)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Done: %s (%s)\n", result["id"], result["resolution"])
+		},
+	}
+	doneCmd.Flags().Bool("wontfix", false, "Resolution: wontfix")
+	doneCmd.Flags().Bool("duplicate", false, "Resolution: duplicate")
+	doneCmd.Flags().String("note", "", "Append closing note")
+	rootCmd.AddCommand(doneCmd)
+
+	// Claim command
+	claimCmd := &cobra.Command{
+		Use:   "claim <id>",
+		Short: "Mark task as in_progress",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			notes, _ := cmd.Flags().GetString("note")
+
+			result, err := tlog.CmdClaim(root, id, notes)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Claimed: %s\n", result["id"])
+		},
+	}
+	claimCmd.Flags().String("note", "", "Append note")
+	rootCmd.AddCommand(claimCmd)
+
+	// Unclaim command
+	unclaimCmd := &cobra.Command{
+		Use:   "unclaim <id>",
+		Short: "Release claimed task back to open",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			notes, _ := cmd.Flags().GetString("note")
+
+			result, err := tlog.CmdUnclaim(root, id, notes)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Unclaimed: %s\n", result["id"])
+		},
+	}
+	unclaimCmd.Flags().String("note", "", "Append note")
+	rootCmd.AddCommand(unclaimCmd)
+
+	// Reopen command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "reopen <id>",
+		Short: "Reopen task (from done or in_progress)",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			result, err := tlog.CmdReopen(root, id)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Reopened: %s\n", result["id"])
+		},
+	})
+
+	// Update command
+	updateCmd := &cobra.Command{
+		Use:   "update <id>",
+		Short: "Update task",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+
+			title, _ := cmd.Flags().GetString("title")
+			description, _ := cmd.Flags().GetString("description")
+			notes, _ := cmd.Flags().GetString("notes")
+			labels, _ := cmd.Flags().GetStringSlice("label")
+			priorityStr, _ := cmd.Flags().GetString("priority")
+
+			var priority *tlog.Priority
+			if priorityStr != "" {
+				p := tlog.ParsePriority(priorityStr)
+				priority = &p
+			}
+
+			result, err := tlog.CmdUpdate(root, id, title, description, notes, labels, priority)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Updated: %s\n", result["id"])
+		},
+	}
+	updateCmd.Flags().String("title", "", "New title")
+	updateCmd.Flags().String("description", "", "Set description (overwrites)")
+	updateCmd.Flags().String("notes", "", "Append notes")
+	updateCmd.Flags().StringSlice("label", nil, "Set labels (repeatable)")
+	updateCmd.Flags().String("priority", "", "Set priority (critical|high|medium|low|backlog)")
+	rootCmd.AddCommand(updateCmd)
+
+	// List command
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List tasks",
+		Run: func(cmd *cobra.Command, args []string) {
+			status, _ := cmd.Flags().GetString("status")
+			label, _ := cmd.Flags().GetString("label")
+
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdList(root, status, label)
+			if err != nil {
+				exitError(err.Error())
+			}
+			tasks := result["tasks"].([]*tlog.Task)
+			if len(tasks) == 0 {
+				fmt.Println("No tasks")
+			} else {
+				for _, t := range tasks {
+					extra := ""
+					if t.Priority != tlog.PriorityMedium {
+						extra = " !" + t.Priority.String()
+					}
+					if len(t.Labels) > 0 {
+						extra += " [" + strings.Join(t.Labels, ", ") + "]"
+					}
+					fmt.Printf("%s  %s (%s)%s\n", t.ID, t.Title, t.Status, extra)
+				}
+			}
+		},
+	}
+	listCmd.Flags().String("status", "open", "Filter by status (open|in_progress|done|all)")
+	listCmd.Flags().String("label", "", "Filter by label")
+	rootCmd.AddCommand(listCmd)
+
+	// Show command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "show <id>",
+		Short: "Show task details",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			result, err := tlog.CmdShow(root, id)
+			if err != nil {
+				exitError(err.Error())
+			}
+			task := result["task"].(*tlog.Task)
+			fmt.Printf("%s: %s\n", task.ID, task.Title)
+			fmt.Printf("Status: %s\n", task.Status)
+			fmt.Printf("Priority: %s\n", task.Priority)
+			if task.Description != "" {
+				fmt.Printf("Description: %s\n", task.Description)
+			}
+			if len(task.Labels) > 0 {
+				fmt.Printf("Labels: %s\n", strings.Join(task.Labels, ", "))
+			}
+			if deps, ok := result["dep_status"].([]map[string]interface{}); ok && len(deps) > 0 {
+				fmt.Print("Deps:")
+				for _, d := range deps {
+					fmt.Printf(" %s(%s)", d["id"], d["status"])
+				}
+				fmt.Println()
+			}
+			if task.Notes != "" {
+				fmt.Printf("Notes: %s\n", task.Notes)
+			}
+		},
+	})
+
+	// Ready command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "ready",
+		Short: "List tasks ready to work on",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdReady(root)
+			if err != nil {
+				exitError(err.Error())
+			}
+			tasks := result["tasks"].([]*tlog.Task)
+			if len(tasks) == 0 {
+				fmt.Println("No tasks ready")
+			} else {
+				for _, t := range tasks {
+					extra := ""
+					if t.Priority != tlog.PriorityMedium {
+						extra = " !" + t.Priority.String()
+					}
+					if len(t.Labels) > 0 {
+						extra += " [" + strings.Join(t.Labels, ", ") + "]"
+					}
+					fmt.Printf("%s  %s%s\n", t.ID, t.Title, extra)
+				}
+			}
+		},
+	})
+
+	// Dep command
+	depCmd := &cobra.Command{
+		Use:   "dep <id> <dep-id>",
+		Short: "Add dependency",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			remove, _ := cmd.Flags().GetBool("remove")
+			action := "add"
+			if remove {
+				action = "remove"
+			}
+
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			depID := resolveID(root, args[1])
+			result, err := tlog.CmdDep(root, id, depID, action)
+			if err != nil {
+				exitError(err.Error())
+			}
+			if action == "add" {
+				fmt.Printf("Dep added: %s -> %s\n", result["id"], result["dep"])
+			} else {
+				fmt.Printf("Dep removed: %s -> %s\n", result["id"], result["dep"])
+			}
+		},
+	}
+	depCmd.Flags().Bool("remove", false, "Remove instead of add")
+	rootCmd.AddCommand(depCmd)
+
+	// Block command
+	blockCmd := &cobra.Command{
+		Use:   "block <id> <block-id>",
+		Short: "Add blocking relationship",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			remove, _ := cmd.Flags().GetBool("remove")
+			action := "add"
+			if remove {
+				action = "remove"
+			}
+
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			blockID := resolveID(root, args[1])
+			result, err := tlog.CmdBlock(root, id, blockID, action)
+			if err != nil {
+				exitError(err.Error())
+			}
+			if action == "add" {
+				fmt.Printf("Block added: %s blocks %s\n", result["id"], result["blocks"])
+			} else {
+				fmt.Printf("Block removed: %s blocks %s\n", result["id"], result["blocks"])
+			}
+		},
+	}
+	blockCmd.Flags().Bool("remove", false, "Remove instead of add")
+	rootCmd.AddCommand(blockCmd)
+
+	// Graph command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "graph",
+		Short: "Show dependency tree",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdGraph(root)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Print(result)
+		},
+	})
+
+	// Prime command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "prime",
+		Short: "Get AI agent context",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdPrime(root)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Print(result)
+		},
+	})
+
+	// Labels command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "labels",
+		Short: "Show labels in use and conventions",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdLabels(root)
+			if err != nil {
+				exitError(err.Error())
+			}
+			inUse := result["in_use"].([]string)
+			if len(inUse) > 0 {
+				fmt.Println("Labels in use:")
+				for _, label := range inUse {
+					fmt.Printf("  %s\n", label)
+				}
+			} else {
+				fmt.Println("No labels in use")
+			}
+		},
+	})
+
+	// Sync command
+	syncCmd := &cobra.Command{
+		Use:   "sync",
+		Short: "Commit .tlog to git",
+		Run: func(cmd *cobra.Command, args []string) {
+			message, _ := cmd.Flags().GetString("message")
+
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdSync(root, message)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Synced: %s\n", result["message"])
+		},
+	}
+	syncCmd.Flags().StringP("message", "m", "", "Commit message")
+	rootCmd.AddCommand(syncCmd)
+}
 
 func exitError(msg string) {
 	fmt.Fprintf(os.Stderr, "error: %s\n", msg)
 	os.Exit(1)
 }
 
-// resolveID resolves a prefix to a full task ID
 func resolveID(root, prefix string) string {
 	events, err := tlog.LoadAllEvents(root)
 	if err != nil {
@@ -25,482 +487,4 @@ func resolveID(root, prefix string) string {
 		exitError(err.Error())
 	}
 	return id
-}
-
-func usage() {
-	fmt.Println(`tlog - append-only task tracking for AI agents
-
-Usage: tlog <command> [options]
-
-Commands:
-  init                    Initialize tlog in current directory
-  create <title>          Create a new task
-    --dep <id>            Add dependency (repeatable)
-    --blocks <id>         Add blocking relationship (repeatable)
-    --label <label>       Add label (repeatable)
-    --description <text>  Set description (what this task is)
-    --notes <text>        Add notes (what happened)
-    --priority <p>        Set priority (critical|high|medium|low|backlog)
-  done <id>               Mark task as done (resolution: completed)
-    --wontfix             Resolution: wontfix
-    --duplicate           Resolution: duplicate
-    --note <text>         Append closing note
-  claim <id>              Mark task as in_progress
-    --note <text>         Append note
-  unclaim <id>            Release claimed task back to open
-    --note <text>         Append note
-  reopen <id>             Reopen task (from done or in_progress)
-  update <id>             Update task
-    --title <text>        New title
-    --description <text>  Set description (overwrites)
-    --notes <text>        Append notes
-    --label <label>       Set labels (repeatable)
-    --priority <p>        Set priority (critical|high|medium|low|backlog)
-  list                    List tasks
-    --status <s>          Filter by status (open|in_progress|done|all, default: open)
-    --label <label>       Filter by label
-  show <id>               Show task details
-  ready                   List tasks ready to work on
-  dep <id> <dep-id>       Add dependency
-    --remove              Remove instead of add
-  block <id> <block-id>   Add blocking relationship
-    --remove              Remove instead of add
-  graph                   Show dependency tree
-  prime                   Get AI agent context
-  labels                  Show labels in use and conventions
-  sync [-m|--message <m>] Commit .tlog to git
-  version                 Show version information`)
-	os.Exit(0)
-}
-
-func main() {
-	if len(os.Args) < 2 {
-		usage()
-	}
-
-	cmd := os.Args[1]
-	args := os.Args[2:]
-
-	switch cmd {
-	case "help", "-h", "--help":
-		usage()
-
-	case "version", "-v", "--version":
-		fmt.Println(buildVersionString())
-
-	case "init":
-		cwd, _ := os.Getwd()
-		result, err := tlog.CmdInit(cwd)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Initialized: %s\n", result["path"])
-
-	case "create":
-		if len(args) < 1 {
-			exitError("create requires a title")
-		}
-		title := args[0]
-		var deps, blocks, labels []string
-		var description, notes string
-		var priority *tlog.Priority
-
-		for i := 1; i < len(args); i++ {
-			switch args[i] {
-			case "--dep":
-				if i+1 < len(args) {
-					deps = append(deps, args[i+1])
-					i++
-				}
-			case "--blocks":
-				if i+1 < len(args) {
-					blocks = append(blocks, args[i+1])
-					i++
-				}
-			case "--label":
-				if i+1 < len(args) {
-					labels = append(labels, args[i+1])
-					i++
-				}
-			case "--description":
-				if i+1 < len(args) {
-					description = args[i+1]
-					i++
-				}
-			case "--notes":
-				if i+1 < len(args) {
-					notes = args[i+1]
-					i++
-				}
-			case "--priority":
-				if i+1 < len(args) {
-					p := tlog.ParsePriority(args[i+1])
-					priority = &p
-					i++
-				}
-			}
-		}
-
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes, priority)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Created: %s %q\n", result["id"], result["title"])
-
-	case "done":
-		if len(args) < 1 {
-			exitError("done requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-
-		var resolution tlog.Resolution
-		var notes string
-		for i := 1; i < len(args); i++ {
-			switch args[i] {
-			case "--wontfix":
-				resolution = tlog.ResolutionWontfix
-			case "--duplicate":
-				resolution = tlog.ResolutionDuplicate
-			case "--note":
-				if i+1 < len(args) {
-					notes = args[i+1]
-					i++
-				}
-			}
-		}
-
-		result, err := tlog.CmdDone(root, id, resolution, notes)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Done: %s (%s)\n", result["id"], result["resolution"])
-
-	case "claim":
-		if len(args) < 1 {
-			exitError("claim requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		var notes string
-		for i := 1; i < len(args); i++ {
-			if args[i] == "--note" && i+1 < len(args) {
-				notes = args[i+1]
-				i++
-			}
-		}
-		result, err := tlog.CmdClaim(root, id, notes)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Claimed: %s\n", result["id"])
-
-	case "unclaim":
-		if len(args) < 1 {
-			exitError("unclaim requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		var notes string
-		for i := 1; i < len(args); i++ {
-			if args[i] == "--note" && i+1 < len(args) {
-				notes = args[i+1]
-				i++
-			}
-		}
-		result, err := tlog.CmdUnclaim(root, id, notes)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Unclaimed: %s\n", result["id"])
-
-	case "reopen":
-		if len(args) < 1 {
-			exitError("reopen requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		result, err := tlog.CmdReopen(root, id)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Reopened: %s\n", result["id"])
-
-	case "update":
-		if len(args) < 1 {
-			exitError("update requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		var title, description, notes string
-		var labels []string
-		var priority *tlog.Priority
-
-		for i := 1; i < len(args); i++ {
-			switch args[i] {
-			case "--title":
-				if i+1 < len(args) {
-					title = args[i+1]
-					i++
-				}
-			case "--description":
-				if i+1 < len(args) {
-					description = args[i+1]
-					i++
-				}
-			case "--notes":
-				if i+1 < len(args) {
-					notes = args[i+1]
-					i++
-				}
-			case "--label":
-				if i+1 < len(args) {
-					labels = append(labels, args[i+1])
-					i++
-				}
-			case "--priority":
-				if i+1 < len(args) {
-					p := tlog.ParsePriority(args[i+1])
-					priority = &p
-					i++
-				}
-			}
-		}
-
-		result, err := tlog.CmdUpdate(root, id, title, description, notes, labels, priority)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Updated: %s\n", result["id"])
-
-	case "list":
-		status := "open"
-		label := ""
-		for i := 0; i < len(args); i++ {
-			if args[i] == "--status" && i+1 < len(args) {
-				status = args[i+1]
-				i++
-			} else if args[i] == "--label" && i+1 < len(args) {
-				label = args[i+1]
-				i++
-			}
-		}
-
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdList(root, status, label)
-		if err != nil {
-			exitError(err.Error())
-		}
-		tasks := result["tasks"].([]*tlog.Task)
-		if len(tasks) == 0 {
-			fmt.Println("No tasks")
-		} else {
-			for _, t := range tasks {
-				extra := ""
-				if t.Priority != tlog.PriorityMedium {
-					extra = " !" + t.Priority.String()
-				}
-				if len(t.Labels) > 0 {
-					extra += " [" + strings.Join(t.Labels, ", ") + "]"
-				}
-				fmt.Printf("%s  %s (%s)%s\n", t.ID, t.Title, t.Status, extra)
-			}
-		}
-
-	case "show":
-		if len(args) < 1 {
-			exitError("show requires a task ID")
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		result, err := tlog.CmdShow(root, id)
-		if err != nil {
-			exitError(err.Error())
-		}
-		task := result["task"].(*tlog.Task)
-		fmt.Printf("%s: %s\n", task.ID, task.Title)
-		fmt.Printf("Status: %s\n", task.Status)
-		fmt.Printf("Priority: %s\n", task.Priority)
-		if task.Description != "" {
-			fmt.Printf("Description: %s\n", task.Description)
-		}
-		if len(task.Labels) > 0 {
-			fmt.Printf("Labels: %s\n", strings.Join(task.Labels, ", "))
-		}
-		if deps, ok := result["dep_status"].([]map[string]interface{}); ok && len(deps) > 0 {
-			fmt.Print("Deps:")
-			for _, d := range deps {
-				fmt.Printf(" %s(%s)", d["id"], d["status"])
-			}
-			fmt.Println()
-		}
-		if task.Notes != "" {
-			fmt.Printf("Notes: %s\n", task.Notes)
-		}
-
-	case "ready":
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdReady(root)
-		if err != nil {
-			exitError(err.Error())
-		}
-		tasks := result["tasks"].([]*tlog.Task)
-		if len(tasks) == 0 {
-			fmt.Println("No tasks ready")
-		} else {
-			for _, t := range tasks {
-				extra := ""
-				if t.Priority != tlog.PriorityMedium {
-					extra = " !" + t.Priority.String()
-				}
-				if len(t.Labels) > 0 {
-					extra += " [" + strings.Join(t.Labels, ", ") + "]"
-				}
-				fmt.Printf("%s  %s%s\n", t.ID, t.Title, extra)
-			}
-		}
-
-	case "dep":
-		if len(args) < 2 {
-			exitError("dep requires task ID and dependency ID")
-		}
-		action := "add"
-		for _, a := range args {
-			if a == "--remove" {
-				action = "remove"
-			}
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		depID := resolveID(root, args[1])
-		result, err := tlog.CmdDep(root, id, depID, action)
-		if err != nil {
-			exitError(err.Error())
-		}
-		if action == "add" {
-			fmt.Printf("Dep added: %s -> %s\n", result["id"], result["dep"])
-		} else {
-			fmt.Printf("Dep removed: %s -> %s\n", result["id"], result["dep"])
-		}
-
-	case "block":
-		if len(args) < 2 {
-			exitError("block requires task ID and block ID")
-		}
-		action := "add"
-		for _, a := range args {
-			if a == "--remove" {
-				action = "remove"
-			}
-		}
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		id := resolveID(root, args[0])
-		blockID := resolveID(root, args[1])
-		result, err := tlog.CmdBlock(root, id, blockID, action)
-		if err != nil {
-			exitError(err.Error())
-		}
-		if action == "add" {
-			fmt.Printf("Block added: %s blocks %s\n", result["id"], result["blocks"])
-		} else {
-			fmt.Printf("Block removed: %s blocks %s\n", result["id"], result["blocks"])
-		}
-
-	case "graph":
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdGraph(root)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Print(result)
-
-	case "prime":
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdPrime(root)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Print(result)
-
-	case "labels":
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdLabels(root)
-		if err != nil {
-			exitError(err.Error())
-		}
-		inUse := result["in_use"].([]string)
-		if len(inUse) > 0 {
-			fmt.Println("Labels in use:")
-			for _, label := range inUse {
-				fmt.Printf("  %s\n", label)
-			}
-		} else {
-			fmt.Println("No labels in use")
-		}
-
-	case "sync":
-		message := ""
-		for i := 0; i < len(args); i++ {
-			if (args[i] == "--message" || args[i] == "-m") && i+1 < len(args) {
-				message = args[i+1]
-				i++
-			}
-		}
-
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			exitError(err.Error())
-		}
-		result, err := tlog.CmdSync(root, message)
-		if err != nil {
-			exitError(err.Error())
-		}
-		fmt.Printf("Synced: %s\n", result["message"])
-
-	default:
-		exitError(fmt.Sprintf("unknown command: %s", cmd))
-	}
 }
