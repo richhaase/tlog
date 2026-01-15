@@ -98,3 +98,7 @@
 {"id":"tl-08ed1406","ts":"2026-01-15T18:46:22.770995Z","type":"status","status":"done","resolution":"completed"}
 {"id":"tl-991637e9","ts":"2026-01-15T18:47:14.743783Z","type":"status","status":"in_progress"}
 {"id":"tl-991637e9","ts":"2026-01-15T18:48:48.90514Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-4783e417","ts":"2026-01-15T18:49:32.269478Z","type":"status","status":"in_progress"}
+{"id":"tl-4783e417","ts":"2026-01-15T18:51:15.744009Z","type":"status","status":"open","notes":"Testing the feature"}
+{"id":"tl-4783e417","ts":"2026-01-15T18:51:35.116776Z","type":"status","status":"in_progress"}
+{"id":"tl-4783e417","ts":"2026-01-15T18:51:35.12193Z","type":"status","status":"done","resolution":"completed"}

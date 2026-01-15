@@ -137,6 +137,43 @@ func CmdClaim(root, id, notes string) (map[string]interface{}, error) {
 	}, nil
 }
 
+// CmdUnclaim releases a claimed task back to open
+func CmdUnclaim(root, id, notes string) (map[string]interface{}, error) {
+	events, err := LoadAllEvents(root)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := ComputeState(events)
+	task, ok := tasks[id]
+	if !ok {
+		return nil, fmt.Errorf("task not found: %s", id)
+	}
+
+	if task.Status != StatusInProgress {
+		return nil, fmt.Errorf("can only unclaim in_progress tasks, task is %s", task.Status)
+	}
+
+	now := NowISO()
+	event := Event{
+		ID:        id,
+		Timestamp: now,
+		Type:      EventStatus,
+		Status:    StatusOpen,
+		Notes:     notes,
+	}
+
+	if err := AppendEvent(root, event); err != nil {
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"id":        id,
+		"status":    StatusOpen,
+		"unclaimed": now,
+	}, nil
+}
+
 // CmdReopen reopens a task (from done or in_progress back to open)
 func CmdReopen(root, id string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)

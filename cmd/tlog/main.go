@@ -51,6 +51,8 @@ Commands:
     --note <text>         Append closing note
   claim <id>              Mark task as in_progress
     --note <text>         Append note
+  unclaim <id>            Release claimed task back to open
+    --note <text>         Append note
   reopen <id>             Reopen task (from done or in_progress)
   update <id>             Update task
     --title <text>        New title
@@ -194,6 +196,28 @@ func main() {
 			}
 		}
 		result, err := tlog.CmdClaim(root, id, notes)
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		outputJSON(result)
+
+	case "unclaim":
+		if len(args) < 1 {
+			errorJSON("unclaim requires a task ID")
+		}
+		root, err := tlog.RequireTlog()
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		id := resolveID(root, args[0])
+		var notes string
+		for i := 1; i < len(args); i++ {
+			if args[i] == "--note" && i+1 < len(args) {
+				notes = args[i+1]
+				i++
+			}
+		}
+		result, err := tlog.CmdUnclaim(root, id, notes)
 		if err != nil {
 			errorJSON(err.Error())
 		}
