@@ -21,9 +21,14 @@ build:
     fi
     echo "Built versioned tlog binary to bin/ (version: $VERSION)"
 
-# Install tlog to GOBIN
+# Install tlog to GOBIN with version information
 install:
-    go install ./cmd/tlog
+    #!/usr/bin/env bash
+    set -euo pipefail
+    VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+    COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "none")
+    DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    go install -ldflags "-X main.version=$VERSION -X main.commit=$COMMIT -X main.date=$DATE" ./cmd/tlog
 
 # Run all unit tests
 test:
