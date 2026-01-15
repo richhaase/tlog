@@ -21,7 +21,7 @@ func CmdInit(path string) (map[string]interface{}, error) {
 }
 
 // CmdCreate creates a new task
-func CmdCreate(root, title string, deps, blocks, labels []string, description, notes string) (map[string]interface{}, error) {
+func CmdCreate(root, title string, deps, blocks, labels []string, description, notes string, priority *Priority) (map[string]interface{}, error) {
 	id := GenerateID()
 	now := NowISO()
 
@@ -41,6 +41,7 @@ func CmdCreate(root, title string, deps, blocks, labels []string, description, n
 		Type:        EventCreate,
 		Title:       title,
 		Status:      StatusOpen,
+		Priority:    priority,
 		Deps:        deps,
 		Blocks:      blocks,
 		Labels:      labels,
@@ -206,7 +207,7 @@ func CmdReopen(root, id string) (map[string]interface{}, error) {
 }
 
 // CmdUpdate updates a task's title, description, notes, or labels
-func CmdUpdate(root, id, title, description, notes string, labels []string) (map[string]interface{}, error) {
+func CmdUpdate(root, id, title, description, notes string, labels []string, priority *Priority) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -226,6 +227,7 @@ func CmdUpdate(root, id, title, description, notes string, labels []string) (map
 		Description: description,
 		Notes:       notes,
 		Labels:      labels,
+		Priority:    priority,
 	}
 
 	if err := AppendEvent(root, event); err != nil {
@@ -454,6 +456,7 @@ func CmdGraph(root string) (string, error) {
 }
 
 // FormatDependencyTree renders tasks as a readable dependency tree
+// Shows tasks top-to-bottom in execution order: do top tasks first, then tasks below become unblocked
 func FormatDependencyTree(tasks map[string]*Task) string {
 	var sb strings.Builder
 
@@ -469,20 +472,25 @@ func FormatDependencyTree(tasks map[string]*Task) string {
 		return "No active tasks"
 	}
 
-	// Find which active tasks are dependencies of other active tasks
-	isDep := make(map[string]bool)
+	// Build reverse dependency map: dependents[X] = tasks that depend on X
+	dependents := make(map[string][]*Task)
 	for _, t := range active {
 		for _, depID := range t.Deps {
-			if _, ok := active[depID]; ok {
-				isDep[depID] = true
-			}
+			dependents[depID] = append(dependents[depID], t)
 		}
 	}
 
-	// Root tasks: active tasks that no other active task depends on
+	// Root tasks: active tasks with no active (non-done) dependencies
 	var roots []*Task
-	for id, t := range active {
-		if !isDep[id] {
+	for _, t := range active {
+		hasActiveDep := false
+		for _, depID := range t.Deps {
+			if dep, ok := tasks[depID]; ok && dep.Status != StatusDone {
+				hasActiveDep = true
+				break
+			}
+		}
+		if !hasActiveDep {
 			roots = append(roots, t)
 		}
 	}
@@ -495,20 +503,20 @@ func FormatDependencyTree(tasks map[string]*Task) string {
 		return roots[i].Title < roots[j].Title
 	})
 
-	// Render each root task with its dependency tree
+	// Render each root task with tasks that depend on it
 	for i, task := range roots {
 		if i > 0 {
 			sb.WriteString("\n")
 		}
 		seen := make(map[string]bool)
-		renderTaskTree(&sb, task, tasks, "", "", seen)
+		renderTaskTree(&sb, task, dependents, "", "", seen)
 	}
 
 	return sb.String()
 }
 
-// renderTaskTree recursively renders a task and its dependencies
-func renderTaskTree(sb *strings.Builder, task *Task, tasks map[string]*Task, prefix string, connector string, seen map[string]bool) {
+// renderTaskTree recursively renders a task and tasks that depend on it
+func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Task, prefix string, connector string, seen map[string]bool) {
 	// Cycle detection
 	if seen[task.ID] {
 		return
@@ -526,23 +534,14 @@ func renderTaskTree(sb *strings.Builder, task *Task, tasks map[string]*Task, pre
 	// Render this task
 	fmt.Fprintf(sb, "%s%s%s %s\n", prefix, connector, status, task.Title)
 
-	// Get dependencies
-	var deps []*Task
-	for _, depID := range task.Deps {
-		if dep, ok := tasks[depID]; ok && !seen[dep.ID] {
-			deps = append(deps, dep)
-		}
-	}
-
+	// Get tasks that depend on this one
+	deps := dependents[task.ID]
 	if len(deps) == 0 {
 		return
 	}
 
-	// Sort dependencies: non-done first
+	// Sort by title
 	sort.Slice(deps, func(i, j int) bool {
-		if (deps[i].Status == StatusDone) != (deps[j].Status == StatusDone) {
-			return deps[i].Status != StatusDone
-		}
 		return deps[i].Title < deps[j].Title
 	})
 
@@ -560,7 +559,7 @@ func renderTaskTree(sb *strings.Builder, task *Task, tasks map[string]*Task, pre
 		if isLast {
 			childConnector = "└─ "
 		}
-		renderTaskTree(sb, dep, tasks, childPrefix, childConnector, seen)
+		renderTaskTree(sb, dep, dependents, childPrefix, childConnector, seen)
 	}
 }
 

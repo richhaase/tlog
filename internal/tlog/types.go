@@ -33,6 +33,53 @@ const (
 	ResolutionDuplicate Resolution = "duplicate"
 )
 
+// Priority represents task priority (lower number = higher priority)
+type Priority int
+
+const (
+	PriorityCritical Priority = 0
+	PriorityHigh     Priority = 1
+	PriorityMedium   Priority = 2 // default
+	PriorityLow      Priority = 3
+	PriorityBacklog  Priority = 4
+)
+
+// String returns the string representation of a priority
+func (p Priority) String() string {
+	switch p {
+	case PriorityCritical:
+		return "critical"
+	case PriorityHigh:
+		return "high"
+	case PriorityMedium:
+		return "medium"
+	case PriorityLow:
+		return "low"
+	case PriorityBacklog:
+		return "backlog"
+	default:
+		return "medium"
+	}
+}
+
+// ParsePriority converts a string to a Priority
+func ParsePriority(s string) Priority {
+	switch s {
+	case "critical":
+		return PriorityCritical
+	case "high":
+		return PriorityHigh
+	case "medium":
+		return PriorityMedium
+	case "low":
+		return PriorityLow
+	case "backlog":
+		return PriorityBacklog
+	default:
+		return PriorityMedium
+	}
+}
+
 // Event represents a single event in the event log
 type Event struct {
 	ID          string     `json:"id"`
@@ -41,6 +88,7 @@ type Event struct {
 	Title       string     `json:"title,omitempty"`
 	Status      TaskStatus `json:"status,omitempty"`
 	Resolution  Resolution `json:"resolution,omitempty"`
+	Priority    *Priority  `json:"priority,omitempty"` // Pointer to distinguish unset from zero
 	Deps        []string   `json:"deps,omitempty"`
 	Blocks      []string   `json:"blocks,omitempty"`
 	Labels      []string   `json:"labels,omitempty"`
@@ -58,6 +106,7 @@ type Task struct {
 	Title       string     `json:"title"`
 	Status      TaskStatus `json:"status"`
 	Resolution  Resolution `json:"resolution,omitempty"`
+	Priority    Priority   `json:"priority"`
 	Deps        []string   `json:"deps"`
 	Blocks      []string   `json:"blocks"`
 	Created     time.Time  `json:"created"`

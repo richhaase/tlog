@@ -9,10 +9,15 @@ func ComputeState(events []Event) map[string]*Task {
 	for _, event := range events {
 		switch event.Type {
 		case EventCreate:
+			priority := PriorityMedium
+			if event.Priority != nil {
+				priority = *event.Priority
+			}
 			tasks[event.ID] = &Task{
 				ID:          event.ID,
 				Title:       event.Title,
 				Status:      StatusOpen,
+				Priority:    priority,
 				Deps:        event.Deps,
 				Blocks:      event.Blocks,
 				Created:     event.Timestamp,
@@ -74,6 +79,9 @@ func ComputeState(events []Event) map[string]*Task {
 				}
 				if event.Labels != nil {
 					task.Labels = event.Labels
+				}
+				if event.Priority != nil {
+					task.Priority = *event.Priority
 				}
 				task.Updated = event.Timestamp
 			}

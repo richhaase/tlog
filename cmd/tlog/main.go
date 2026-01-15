@@ -40,6 +40,7 @@ Commands:
     --label <label>       Add label (repeatable)
     --description <text>  Set description (what this task is)
     --notes <text>        Add notes (what happened)
+    --priority <p>        Set priority (critical|high|medium|low|backlog)
   done <id>               Mark task as done (resolution: completed)
     --wontfix             Resolution: wontfix
     --duplicate           Resolution: duplicate
@@ -54,6 +55,7 @@ Commands:
     --description <text>  Set description (overwrites)
     --notes <text>        Append notes
     --label <label>       Set labels (repeatable)
+    --priority <p>        Set priority (critical|high|medium|low|backlog)
   list                    List tasks
     --status <s>          Filter by status (open|in_progress|done|all, default: open)
     --label <label>       Filter by label
@@ -101,6 +103,7 @@ func main() {
 		title := args[0]
 		var deps, blocks, labels []string
 		var description, notes string
+		var priority *tlog.Priority
 
 		for i := 1; i < len(args); i++ {
 			switch args[i] {
@@ -129,6 +132,12 @@ func main() {
 					notes = args[i+1]
 					i++
 				}
+			case "--priority":
+				if i+1 < len(args) {
+					p := tlog.ParsePriority(args[i+1])
+					priority = &p
+					i++
+				}
 			}
 		}
 
@@ -136,7 +145,7 @@ func main() {
 		if err != nil {
 			exitError(err.Error())
 		}
-		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes)
+		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes, priority)
 		if err != nil {
 			exitError(err.Error())
 		}
@@ -244,6 +253,7 @@ func main() {
 		id := resolveID(root, args[0])
 		var title, description, notes string
 		var labels []string
+		var priority *tlog.Priority
 
 		for i := 1; i < len(args); i++ {
 			switch args[i] {
@@ -267,10 +277,16 @@ func main() {
 					labels = append(labels, args[i+1])
 					i++
 				}
+			case "--priority":
+				if i+1 < len(args) {
+					p := tlog.ParsePriority(args[i+1])
+					priority = &p
+					i++
+				}
 			}
 		}
 
-		result, err := tlog.CmdUpdate(root, id, title, description, notes, labels)
+		result, err := tlog.CmdUpdate(root, id, title, description, notes, labels, priority)
 		if err != nil {
 			exitError(err.Error())
 		}
@@ -302,11 +318,14 @@ func main() {
 			fmt.Println("No tasks")
 		} else {
 			for _, t := range tasks {
-				labels := ""
-				if len(t.Labels) > 0 {
-					labels = " [" + strings.Join(t.Labels, ", ") + "]"
+				extra := ""
+				if t.Priority != tlog.PriorityMedium {
+					extra = " !" + t.Priority.String()
 				}
-				fmt.Printf("%s  %s (%s)%s\n", t.ID, t.Title, t.Status, labels)
+				if len(t.Labels) > 0 {
+					extra += " [" + strings.Join(t.Labels, ", ") + "]"
+				}
+				fmt.Printf("%s  %s (%s)%s\n", t.ID, t.Title, t.Status, extra)
 			}
 		}
 
@@ -326,6 +345,7 @@ func main() {
 		task := result["task"].(*tlog.Task)
 		fmt.Printf("%s: %s\n", task.ID, task.Title)
 		fmt.Printf("Status: %s\n", task.Status)
+		fmt.Printf("Priority: %s\n", task.Priority)
 		if task.Description != "" {
 			fmt.Printf("Description: %s\n", task.Description)
 		}
@@ -357,11 +377,14 @@ func main() {
 			fmt.Println("No tasks ready")
 		} else {
 			for _, t := range tasks {
-				labels := ""
-				if len(t.Labels) > 0 {
-					labels = " [" + strings.Join(t.Labels, ", ") + "]"
+				extra := ""
+				if t.Priority != tlog.PriorityMedium {
+					extra = " !" + t.Priority.String()
 				}
-				fmt.Printf("%s  %s%s\n", t.ID, t.Title, labels)
+				if len(t.Labels) > 0 {
+					extra += " [" + strings.Join(t.Labels, ", ") + "]"
+				}
+				fmt.Printf("%s  %s%s\n", t.ID, t.Title, extra)
 			}
 		}
 
