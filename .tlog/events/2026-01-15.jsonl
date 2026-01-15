@@ -110,3 +110,7 @@
 {"id":"tl-21907583","ts":"2026-01-15T19:21:07.626861Z","type":"status","status":"done","resolution":"completed"}
 {"id":"tl-5ef7e1dd","ts":"2026-01-15T19:41:16.932419Z","type":"create","title":"Test task","status":"open","labels":["test"]}
 {"id":"tl-5ef7e1dd","ts":"2026-01-15T19:41:33.775259Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-6a08ce9f","ts":"2026-01-15T20:04:16.406036Z","type":"create","title":"Test task with description","status":"open","description":"This is a test description"}
+{"id":"tl-6a08ce9f","ts":"2026-01-15T20:06:11.36564Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-e9a695f5","ts":"2026-01-15T20:09:31.582928Z","type":"create","title":"Add bulk create from stdin/file","status":"open","labels":["priority:low"],"description":"TBD"}
+{"id":"tl-e9a695f5","ts":"2026-01-15T20:10:21.187777Z","type":"update","title":"Add bulk create"}
