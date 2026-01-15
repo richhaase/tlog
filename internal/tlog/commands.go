@@ -447,6 +447,42 @@ func CmdPrime(root string) (map[string]interface{}, error) {
 	}, nil
 }
 
+// CmdLabels shows labels in use and recommended conventions
+func CmdLabels(root string) (map[string]interface{}, error) {
+	events, err := LoadAllEvents(root)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := ComputeState(events)
+
+	// Collect unique labels
+	labelSet := make(map[string]bool)
+	for _, task := range tasks {
+		for _, label := range task.Labels {
+			labelSet[label] = true
+		}
+	}
+
+	var labels []string
+	for label := range labelSet {
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+
+	recommended := map[string][]string{
+		"priority": {"backlog", "low", "medium", "high", "critical"},
+		"type":     {"feature", "bug", "refactor", "chore"},
+		"needs":    {"human-review", "agent-review", "discussion", "design"},
+	}
+
+	return map[string]interface{}{
+		"in_use":      labels,
+		"recommended": recommended,
+		"note":        "Use feature:<name> for freeform grouping",
+	}, nil
+}
+
 // CmdSync commits .tlog to git
 func CmdSync(root, message string) (map[string]interface{}, error) {
 	if message == "" {

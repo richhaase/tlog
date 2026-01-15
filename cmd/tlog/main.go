@@ -62,6 +62,7 @@ Commands:
     --remove              Remove instead of add
   graph [--format <f>]    Show dependency graph (json|mermaid)
   prime                   Get AI agent context
+  labels                  Show labels in use and conventions
   sync [-m|--message <m>] Commit .tlog to git
   version                 Show version information`)
 	os.Exit(0)
@@ -336,6 +337,17 @@ func main() {
 			errorJSON(err.Error())
 		}
 		result, err := tlog.CmdPrime(root)
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		outputJSON(result)
+
+	case "labels":
+		root, err := tlog.RequireTlog()
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		result, err := tlog.CmdLabels(root)
 		if err != nil {
 			errorJSON(err.Error())
 		}
