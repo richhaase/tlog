@@ -96,3 +96,5 @@
 {"id":"tl-991637e9","ts":"2026-01-15T18:15:43.153198Z","type":"create","title":"Add --label flag to list command for filtering","status":"open","labels":["priority:low","needs:agent-review"],"description":"Filter tasks by label without parsing JSON","notes":"Something like 'tlog list --label priority:high' to find tasks by label directly."}
 {"id":"tl-08ed1406","ts":"2026-01-15T18:43:26.646485Z","type":"status","status":"in_progress"}
 {"id":"tl-08ed1406","ts":"2026-01-15T18:46:22.770995Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-991637e9","ts":"2026-01-15T18:47:14.743783Z","type":"status","status":"in_progress"}
+{"id":"tl-991637e9","ts":"2026-01-15T18:48:48.90514Z","type":"status","status":"done","resolution":"completed"}

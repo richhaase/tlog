@@ -201,8 +201,8 @@ func CmdUpdate(root, id, title, description, notes string, labels []string) (map
 	}, nil
 }
 
-// CmdList lists tasks with optional status filter
-func CmdList(root string, statusFilter string) (map[string]interface{}, error) {
+// CmdList lists tasks with optional status and label filters
+func CmdList(root string, statusFilter string, labelFilter string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -212,12 +212,30 @@ func CmdList(root string, statusFilter string) (map[string]interface{}, error) {
 
 	var taskList []*Task
 	for _, task := range tasks {
-		if statusFilter == "all" ||
+		// Check status filter
+		statusMatch := statusFilter == "all" ||
 			(statusFilter == "open" && task.Status == StatusOpen) ||
 			(statusFilter == "in_progress" && task.Status == StatusInProgress) ||
-			(statusFilter == "done" && task.Status == StatusDone) {
-			taskList = append(taskList, task)
+			(statusFilter == "done" && task.Status == StatusDone)
+		if !statusMatch {
+			continue
 		}
+
+		// Check label filter
+		if labelFilter != "" {
+			hasLabel := false
+			for _, label := range task.Labels {
+				if label == labelFilter {
+					hasLabel = true
+					break
+				}
+			}
+			if !hasLabel {
+				continue
+			}
+		}
+
+		taskList = append(taskList, task)
 	}
 
 	// Sort by created time descending

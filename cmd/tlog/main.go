@@ -57,7 +57,9 @@ Commands:
     --description <text>  Set description (overwrites)
     --notes <text>        Append notes
     --label <label>       Set labels (repeatable)
-  list [--status <s>]     List tasks (open|in_progress|done|all, default: open)
+  list                    List tasks
+    --status <s>          Filter by status (open|in_progress|done|all, default: open)
+    --label <label>       Filter by label
   show <id>               Show task details
   ready                   List tasks ready to work on
   dep <id> <dep-id>       Add dependency
@@ -257,9 +259,13 @@ func main() {
 
 	case "list":
 		status := "open"
+		label := ""
 		for i := 0; i < len(args); i++ {
 			if args[i] == "--status" && i+1 < len(args) {
 				status = args[i+1]
+				i++
+			} else if args[i] == "--label" && i+1 < len(args) {
+				label = args[i+1]
 				i++
 			}
 		}
@@ -268,7 +274,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdList(root, status)
+		result, err := tlog.CmdList(root, status, label)
 		if err != nil {
 			errorJSON(err.Error())
 		}
