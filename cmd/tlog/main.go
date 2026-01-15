@@ -18,6 +18,20 @@ func errorJSON(msg string) {
 	os.Exit(1)
 }
 
+// resolveID resolves a prefix to a full task ID
+func resolveID(root, prefix string) string {
+	events, err := tlog.LoadAllEvents(root)
+	if err != nil {
+		errorJSON(err.Error())
+	}
+	tasks := tlog.ComputeState(events)
+	id, err := tlog.ResolveID(tasks, prefix)
+	if err != nil {
+		errorJSON(err.Error())
+	}
+	return id
+}
+
 func usage() {
 	fmt.Println(`tlog - append-only task tracking for AI agents
 
@@ -124,7 +138,8 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdDone(root, args[0])
+		id := resolveID(root, args[0])
+		result, err := tlog.CmdDone(root, id)
 		if err != nil {
 			errorJSON(err.Error())
 		}
@@ -138,7 +153,8 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdReopen(root, args[0])
+		id := resolveID(root, args[0])
+		result, err := tlog.CmdReopen(root, id)
 		if err != nil {
 			errorJSON(err.Error())
 		}
@@ -148,7 +164,11 @@ func main() {
 		if len(args) < 1 {
 			errorJSON("update requires a task ID")
 		}
-		id := args[0]
+		root, err := tlog.RequireTlog()
+		if err != nil {
+			errorJSON(err.Error())
+		}
+		id := resolveID(root, args[0])
 		var title, notes string
 		var labels []string
 
@@ -172,10 +192,6 @@ func main() {
 			}
 		}
 
-		root, err := tlog.RequireTlog()
-		if err != nil {
-			errorJSON(err.Error())
-		}
 		result, err := tlog.CmdUpdate(root, id, title, notes, labels)
 		if err != nil {
 			errorJSON(err.Error())
@@ -209,7 +225,8 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdShow(root, args[0])
+		id := resolveID(root, args[0])
+		result, err := tlog.CmdShow(root, id)
 		if err != nil {
 			errorJSON(err.Error())
 		}
@@ -240,7 +257,9 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdDep(root, args[0], args[1], action)
+		id := resolveID(root, args[0])
+		depID := resolveID(root, args[1])
+		result, err := tlog.CmdDep(root, id, depID, action)
 		if err != nil {
 			errorJSON(err.Error())
 		}
@@ -260,7 +279,9 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdBlock(root, args[0], args[1], action)
+		id := resolveID(root, args[0])
+		blockID := resolveID(root, args[1])
+		result, err := tlog.CmdBlock(root, id, blockID, action)
 		if err != nil {
 			errorJSON(err.Error())
 		}

@@ -1,5 +1,7 @@
 package tlog
 
+import "fmt"
+
 // ComputeState replays events to build current task state
 func ComputeState(events []Event) map[string]*Task {
 	tasks := make(map[string]*Task)
@@ -173,4 +175,36 @@ func removeItem(slice []string, item string) []string {
 		}
 	}
 	return result
+}
+
+// ResolveID resolves a prefix to a full task ID.
+// Accepts "tl-abc", "abc", or full ID. Returns error if no match or ambiguous.
+func ResolveID(tasks map[string]*Task, prefix string) (string, error) {
+	// Normalize: strip "tl-" prefix if present
+	search := prefix
+	if len(prefix) > 3 && prefix[:3] == "tl-" {
+		search = prefix[3:]
+	}
+
+	var matches []string
+	for id := range tasks {
+		// Extract hex part (after "tl-")
+		hex := id[3:]
+		if hex == search || id == prefix {
+			// Exact match
+			return id, nil
+		}
+		if len(search) <= len(hex) && hex[:len(search)] == search {
+			matches = append(matches, id)
+		}
+	}
+
+	switch len(matches) {
+	case 0:
+		return "", fmt.Errorf("no task found matching '%s'", prefix)
+	case 1:
+		return matches[0], nil
+	default:
+		return "", fmt.Errorf("ambiguous prefix '%s' matches %d tasks: %v", prefix, len(matches), matches)
+	}
 }

@@ -1,0 +1,51 @@
+{"id":"tl-1f55eff5","ts":"2026-01-15T04:47:54Z","type":"create","title":"Set up Go module and project structure","status":"open","deps":[],"blocks":[],"notes":"go mod init, create cmd/tlog/main.go, internal/tlog/ package structure"}
+{"id":"tl-354e6c4f","ts":"2026-01-15T04:48:05Z","type":"create","title":"Define core data types","status":"open","deps":["tl-1f55eff5"],"blocks":[],"notes":"Event struct (ID, Timestamp, Type, payload fields), Task struct (computed state), EventType constants (create/status/dep/block/update)"}
+{"id":"tl-a2b8282f","ts":"2026-01-15T04:48:10Z","type":"create","title":"Implement storage layer","status":"open","deps":["tl-354e6c4f"],"blocks":[],"notes":"get_tlog_root(), require_tlog(), append_event() to daily JSONL, load_all_events() with chronological sort"}
+{"id":"tl-9b24a02a","ts":"2026-01-15T04:48:16Z","type":"create","title":"Implement state computation","status":"open","deps":["tl-a2b8282f"],"blocks":[],"notes":"compute_state() - replay events to build task map, get_ready_tasks() - filter open tasks with satisfied deps and no blockers"}
+{"id":"tl-34d8a29c","ts":"2026-01-15T04:48:21Z","type":"create","title":"Implement init command","status":"open","deps":["tl-a2b8282f"],"blocks":[],"notes":"Create .tlog/ directory with config.json and events/ subdirectory"}
+{"id":"tl-4323676d","ts":"2026-01-15T04:48:29Z","type":"create","title":"Implement create command","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"Generate ID (tl-XXXXXXXX via SHA256), create event with title/deps/blocks/labels/notes, append to daily JSONL"}
+{"id":"tl-04820f6a","ts":"2026-01-15T04:48:30Z","type":"create","title":"Implement done/reopen commands","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"Status change events, verify task exists before updating"}
+{"id":"tl-eb831ea9","ts":"2026-01-15T04:48:32Z","type":"create","title":"Implement update command","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"Update title, notes, labels via update event type"}
+{"id":"tl-29843dbd","ts":"2026-01-15T04:48:40Z","type":"create","title":"Implement list/show/ready commands","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"list: filter by status (open/done/all), show: single task detail with dep status, ready: get_ready_tasks()"}
+{"id":"tl-9872d9bb","ts":"2026-01-15T04:48:41Z","type":"create","title":"Implement dep/block commands","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"Add/remove dependencies and blocking relationships via dep/block event types"}
+{"id":"tl-b24be6af","ts":"2026-01-15T04:48:43Z","type":"create","title":"Implement graph command","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"build_dependency_graph(), output JSON or Mermaid format"}
+{"id":"tl-bc8a140e","ts":"2026-01-15T04:48:50Z","type":"create","title":"Implement prime command","status":"open","deps":["tl-9b24a02a"],"blocks":[],"notes":"Generate condensed context for AI agents: summary, ready_tasks, recent_completed, blocked_tasks"}
+{"id":"tl-3185bde4","ts":"2026-01-15T04:48:51Z","type":"create","title":"Implement sync command","status":"open","deps":["tl-a2b8282f"],"blocks":[],"notes":"Git integration via os/exec: git add .tlog/ && git commit"}
+{"id":"tl-824b8802","ts":"2026-01-15T04:48:58Z","type":"create","title":"Wire up CLI with cobra or stdlib flag","status":"open","deps":["tl-34d8a29c","tl-4323676d","tl-04820f6a","tl-eb831ea9","tl-29843dbd","tl-9872d9bb","tl-b24be6af","tl-bc8a140e","tl-3185bde4"],"blocks":[],"notes":"Subcommand routing, argument parsing, JSON output helpers (output_json, error_json)"}
+{"id":"tl-f7053c10","ts":"2026-01-15T04:49:06Z","type":"create","title":"Add tests for core logic","status":"open","deps":["tl-824b8802"],"blocks":[],"notes":"Test compute_state(), get_ready_tasks(), event append/load, ID generation"}
+{"id":"tl-c4d5f943","ts":"2026-01-15T04:49:08Z","type":"create","title":"Update documentation for Go version","status":"open","deps":["tl-824b8802"],"blocks":[],"notes":"Update README.md installation instructions, update AGENTS.md if needed"}
+{"id":"tl-b741eaf6","ts":"2026-01-15T04:53:38.887676Z","type":"create","title":"Test task 1","status":"open","notes":"First test task"}
+{"id":"tl-80fd4f42","ts":"2026-01-15T04:53:44.275234Z","type":"create","title":"Test task 2","status":"open","deps":["tl-b741eaf6"]}
+{"id":"tl-b741eaf6","ts":"2026-01-15T04:53:58.975883Z","type":"status","status":"done"}
+{"id":"tl-1f55eff5","ts":"2026-01-15T04:54:40Z","type":"status","status":"done"}
+{"id":"tl-354e6c4f","ts":"2026-01-15T04:54:41Z","type":"status","status":"done"}
+{"id":"tl-a2b8282f","ts":"2026-01-15T04:54:41Z","type":"status","status":"done"}
+{"id":"tl-9b24a02a","ts":"2026-01-15T04:54:41Z","type":"status","status":"done"}
+{"id":"tl-34d8a29c","ts":"2026-01-15T04:54:47Z","type":"status","status":"done"}
+{"id":"tl-4323676d","ts":"2026-01-15T04:54:47Z","type":"status","status":"done"}
+{"id":"tl-04820f6a","ts":"2026-01-15T04:54:47Z","type":"status","status":"done"}
+{"id":"tl-eb831ea9","ts":"2026-01-15T04:54:47Z","type":"status","status":"done"}
+{"id":"tl-29843dbd","ts":"2026-01-15T04:54:47Z","type":"status","status":"done"}
+{"id":"tl-9872d9bb","ts":"2026-01-15T04:54:48Z","type":"status","status":"done"}
+{"id":"tl-b24be6af","ts":"2026-01-15T04:54:48Z","type":"status","status":"done"}
+{"id":"tl-bc8a140e","ts":"2026-01-15T04:54:48Z","type":"status","status":"done"}
+{"id":"tl-3185bde4","ts":"2026-01-15T04:54:48Z","type":"status","status":"done"}
+{"id":"tl-824b8802","ts":"2026-01-15T04:54:55Z","type":"status","status":"done"}
+{"id":"tl-f7053c10","ts":"2026-01-15T04:55:46Z","type":"status","status":"done"}
+{"id":"tl-c4d5f943","ts":"2026-01-15T04:56:16Z","type":"status","status":"done"}
+{"id":"tl-b741eaf6","ts":"2026-01-15T04:56:23Z","type":"status","status":"done"}
+{"id":"tl-80fd4f42","ts":"2026-01-15T04:56:23Z","type":"status","status":"done"}
+{"id":"tl-6cb11611","ts":"2026-01-15T05:00:55Z","type":"create","title":"Add justfile following agentic-code-reviewer pattern","status":"open","deps":[],"blocks":[],"notes":"See ../agentic-code-reviewer for pattern"}
+{"id":"tl-c8b66397","ts":"2026-01-15T05:00:57Z","type":"create","title":"Add version command to tlog Go CLI","status":"open","deps":[],"blocks":[],"notes":"Follow acr pattern for version embedding"}
+{"id":"tl-2e69b325","ts":"2026-01-15T05:00:59Z","type":"create","title":"Remove tlog.py Python implementation","status":"open","deps":[],"blocks":[],"notes":"Go port is complete, remove Python version"}
+{"id":"tl-6cb11611","ts":"2026-01-15T05:03:09Z","type":"status","status":"done"}
+{"id":"tl-c8b66397","ts":"2026-01-15T05:03:09Z","type":"status","status":"done"}
+{"id":"tl-2e69b325","ts":"2026-01-15T05:06:19.825214Z","type":"status","status":"done"}
+{"id":"tl-476ff6c2","ts":"2026-01-15T05:17:26.379438Z","type":"create","title":"Add prefix ID matching","status":"open","notes":"ResolveID() function that matches partial IDs (e.g., '6cb1' → 'tl-6cb11611'). Error if ambiguous. Apply to all commands that accept IDs."}
+{"id":"tl-288797e5","ts":"2026-01-15T05:17:28.030408Z","type":"create","title":"Add archive/unarchive commands","status":"open","notes":"New 'archive' event type. tlog archive \u003cid\u003e, tlog unarchive \u003cid\u003e. Exclude archived from list/ready by default, --all flag to show."}
+{"id":"tl-302cb436","ts":"2026-01-15T05:17:29.759595Z","type":"create","title":"Add reverse dependency view","status":"open","notes":"Enhance 'tlog show' to include blocks/blocked_by arrays. Optionally add 'tlog blocks \u003cid\u003e' and 'tlog blocked-by \u003cid\u003e' commands."}
+{"id":"tl-b49e8a74","ts":"2026-01-15T05:17:32.0281Z","type":"create","title":"Add tlog edit command","status":"open","notes":"Opens $EDITOR with task as YAML/JSON, applies diff as update event. Convenience over tlog update --title/--notes flags."}
+{"id":"tl-a79993a9","ts":"2026-01-15T05:17:34.998351Z","type":"create","title":"Improve CLI consistency","status":"open","notes":"Align dep/block commands with create flags: 'tlog dep \u003cid\u003e --on \u003cother\u003e' instead of positional. Add --rm flag for removal."}
+{"id":"tl-f6a8e0dc","ts":"2026-01-15T05:17:39.063848Z","type":"create","title":"Add tlog compact command","status":"open","notes":"Rewrite .tlog/events/* to single snapshot of current state. One create event per live task. Optional archive of old events."}
+{"id":"tl-476ff6c2","ts":"2026-01-15T05:20:18.723954Z","type":"status","status":"done"}
+{"id":"tl-b49e8a74","ts":"2026-01-15T05:21:48.506503Z","type":"status","status":"done"}
