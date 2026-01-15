@@ -44,7 +44,10 @@ Commands:
     --blocks <id>         Add blocking relationship (repeatable)
     --label <label>       Add label (repeatable)
     --notes <text>        Add notes
-  done <id>               Mark task as done
+  done <id>               Mark task as done (resolution: completed)
+    --wontfix             Resolution: wontfix
+    --duplicate           Resolution: duplicate
+    --note <text>         Add closing note
   reopen <id>             Reopen a completed task
   update <id>             Update task
     --title <text>        New title
@@ -139,7 +142,24 @@ func main() {
 			errorJSON(err.Error())
 		}
 		id := resolveID(root, args[0])
-		result, err := tlog.CmdDone(root, id)
+
+		var resolution tlog.Resolution
+		var notes string
+		for i := 1; i < len(args); i++ {
+			switch args[i] {
+			case "--wontfix":
+				resolution = tlog.ResolutionWontfix
+			case "--duplicate":
+				resolution = tlog.ResolutionDuplicate
+			case "--note":
+				if i+1 < len(args) {
+					notes = args[i+1]
+					i++
+				}
+			}
+		}
+
+		result, err := tlog.CmdDone(root, id, resolution, notes)
 		if err != nil {
 			errorJSON(err.Error())
 		}

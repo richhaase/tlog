@@ -23,17 +23,27 @@ const (
 	StatusDone TaskStatus = "done"
 )
 
+// Resolution represents why a task was closed
+type Resolution string
+
+const (
+	ResolutionCompleted Resolution = "completed"
+	ResolutionWontfix   Resolution = "wontfix"
+	ResolutionDuplicate Resolution = "duplicate"
+)
+
 // Event represents a single event in the event log
 type Event struct {
-	ID        string     `json:"id"`
-	Timestamp time.Time  `json:"ts"`
-	Type      EventType  `json:"type"`
-	Title     string     `json:"title,omitempty"`
-	Status    TaskStatus `json:"status,omitempty"`
-	Deps      []string   `json:"deps,omitempty"`
-	Blocks    []string   `json:"blocks,omitempty"`
-	Labels    []string   `json:"labels,omitempty"`
-	Notes     string     `json:"notes,omitempty"`
+	ID         string     `json:"id"`
+	Timestamp  time.Time  `json:"ts"`
+	Type       EventType  `json:"type"`
+	Title      string     `json:"title,omitempty"`
+	Status     TaskStatus `json:"status,omitempty"`
+	Resolution Resolution `json:"resolution,omitempty"`
+	Deps       []string   `json:"deps,omitempty"`
+	Blocks     []string   `json:"blocks,omitempty"`
+	Labels     []string   `json:"labels,omitempty"`
+	Notes      string     `json:"notes,omitempty"`
 	// For dep/block events
 	Dep    string `json:"dep,omitempty"`
 	Block  string `json:"block,omitempty"`
@@ -42,15 +52,16 @@ type Event struct {
 
 // Task represents the computed state of a task
 type Task struct {
-	ID      string     `json:"id"`
-	Title   string     `json:"title"`
-	Status  TaskStatus `json:"status"`
-	Deps    []string   `json:"deps"`
-	Blocks  []string   `json:"blocks"`
-	Created time.Time  `json:"created"`
-	Updated time.Time  `json:"updated"`
-	Labels  []string   `json:"labels"`
-	Notes   string     `json:"notes"`
+	ID         string     `json:"id"`
+	Title      string     `json:"title"`
+	Status     TaskStatus `json:"status"`
+	Resolution Resolution `json:"resolution,omitempty"`
+	Deps       []string   `json:"deps"`
+	Blocks     []string   `json:"blocks"`
+	Created    time.Time  `json:"created"`
+	Updated    time.Time  `json:"updated"`
+	Labels     []string   `json:"labels"`
+	Notes      string     `json:"notes"`
 }
 
 // GraphNode represents a node in the dependency graph

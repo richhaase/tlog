@@ -33,6 +33,10 @@ func ComputeState(events []Event) map[string]*Task {
 		case EventStatus:
 			if task, ok := tasks[event.ID]; ok {
 				task.Status = event.Status
+				task.Resolution = event.Resolution
+				if event.Notes != "" {
+					task.Notes = event.Notes
+				}
 				task.Updated = event.Timestamp
 			}
 

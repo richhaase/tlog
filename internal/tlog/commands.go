@@ -62,7 +62,7 @@ func CmdCreate(root, title string, deps, blocks, labels []string, notes string) 
 }
 
 // CmdDone marks a task as done
-func CmdDone(root, id string) (map[string]interface{}, error) {
+func CmdDone(root, id string, resolution Resolution, notes string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -73,12 +73,18 @@ func CmdDone(root, id string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("task not found: %s", id)
 	}
 
+	if resolution == "" {
+		resolution = ResolutionCompleted
+	}
+
 	now := NowISO()
 	event := Event{
-		ID:        id,
-		Timestamp: now,
-		Type:      EventStatus,
-		Status:    StatusDone,
+		ID:         id,
+		Timestamp:  now,
+		Type:       EventStatus,
+		Status:     StatusDone,
+		Resolution: resolution,
+		Notes:      notes,
 	}
 
 	if err := AppendEvent(root, event); err != nil {
@@ -86,9 +92,10 @@ func CmdDone(root, id string) (map[string]interface{}, error) {
 	}
 
 	return map[string]interface{}{
-		"id":        id,
-		"status":    StatusDone,
-		"completed": now,
+		"id":         id,
+		"status":     StatusDone,
+		"resolution": resolution,
+		"completed":  now,
 	}, nil
 }
 
