@@ -501,12 +501,15 @@ func FormatDependencyTree(tasks map[string]*Task) string {
 		}
 	}
 
-	// Sort: in_progress first, then open, then by title
+	// Sort: in_progress first, then by priority, then by created time
 	sort.Slice(roots, func(i, j int) bool {
 		if roots[i].Status != roots[j].Status {
 			return roots[i].Status == StatusInProgress
 		}
-		return roots[i].Title < roots[j].Title
+		if roots[i].Priority != roots[j].Priority {
+			return roots[i].Priority < roots[j].Priority
+		}
+		return roots[i].Created.Before(roots[j].Created)
 	})
 
 	// Render each root task with tasks that depend on it
@@ -538,7 +541,7 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 	}
 
 	// Render this task
-	fmt.Fprintf(sb, "%s%s%s %s\n", prefix, connector, status, task.Title)
+	fmt.Fprintf(sb, "%s%s%s %s  %s\n", prefix, connector, status, task.ID, task.Title)
 
 	// Get tasks that depend on this one
 	deps := dependents[task.ID]
@@ -546,9 +549,12 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 		return
 	}
 
-	// Sort by title
+	// Sort by priority, then by created time
 	sort.Slice(deps, func(i, j int) bool {
-		return deps[i].Title < deps[j].Title
+		if deps[i].Priority != deps[j].Priority {
+			return deps[i].Priority < deps[j].Priority
+		}
+		return deps[i].Created.Before(deps[j].Created)
 	})
 
 	// Calculate child prefix based on current connector

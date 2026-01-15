@@ -179,3 +179,8 @@
 {"id":"tl-a6f41347","ts":"2026-01-15T21:54:07.372235Z","type":"status","status":"open"}
 {"id":"tl-a6f41347","ts":"2026-01-15T21:54:07.377368Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task for priority feature"}
 {"id":"tl-e9a695f5","ts":"2026-01-15T21:54:58.030427Z","type":"update","priority":4}
+{"id":"tl-31ecedef","ts":"2026-01-15T21:56:05.522315Z","type":"status","status":"in_progress"}
+{"id":"tl-31ecedef","ts":"2026-01-15T21:57:00.969374Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-31ecedef","ts":"2026-01-15T22:02:28.206482Z","type":"status","status":"open"}
+{"id":"tl-31ecedef","ts":"2026-01-15T22:02:28.212388Z","type":"status","status":"in_progress"}
+{"id":"tl-31ecedef","ts":"2026-01-15T22:03:10.494607Z","type":"status","status":"done","resolution":"completed"}
