@@ -156,3 +156,20 @@
 {"id":"tl-2f8dba15","ts":"2026-01-15T21:22:45.469906Z","type":"dep","dep":"tl-7280f845","action":"remove"}
 {"id":"tl-9c135d2f","ts":"2026-01-15T21:26:55.985247Z","type":"status","status":"in_progress"}
 {"id":"tl-9c135d2f","ts":"2026-01-15T21:28:24.258237Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-f9f2c2a7","ts":"2026-01-15T21:34:54.909367Z","type":"create","title":"Add priority field to Task type","status":"open","description":"Add Priority field with values: critical(0), high(1), medium(2), low(3), backlog(4). Default: medium"}
+{"id":"tl-4614eb07","ts":"2026-01-15T21:35:27.424626Z","type":"create","title":"Add --priority flag to create command","status":"open","deps":["tl-f9f2c2a7"]}
+{"id":"tl-9a79f756","ts":"2026-01-15T21:35:31.165088Z","type":"create","title":"Add --priority flag to update command","status":"open","deps":["tl-f9f2c2a7"]}
+{"id":"tl-92b1d1c0","ts":"2026-01-15T21:35:32.88955Z","type":"create","title":"Sort ready/list by priority","status":"open","deps":["tl-f9f2c2a7"]}
+{"id":"tl-f492f102","ts":"2026-01-15T21:35:34.389715Z","type":"create","title":"Show priority in task output","status":"open","deps":["tl-f9f2c2a7"]}
+{"id":"tl-31ecedef","ts":"2026-01-15T21:36:22.443164Z","type":"create","title":"Include task IDs in graph output","status":"open"}
+{"id":"tl-f9f2c2a7","ts":"2026-01-15T21:36:33.508679Z","type":"status","status":"in_progress"}
+{"id":"tl-f9f2c2a7","ts":"2026-01-15T21:40:35.160435Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-4614eb07","ts":"2026-01-15T21:40:35.166422Z","type":"status","status":"in_progress"}
+{"id":"tl-a6f41347","ts":"2026-01-15T21:41:18.125045Z","type":"create","title":"Test priority task","status":"open","priority":1}
+{"id":"tl-4614eb07","ts":"2026-01-15T21:41:34.942769Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-9a79f756","ts":"2026-01-15T21:41:34.948657Z","type":"status","status":"in_progress"}
+{"id":"tl-9a79f756","ts":"2026-01-15T21:42:25.423013Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-f492f102","ts":"2026-01-15T21:42:25.426621Z","type":"status","status":"in_progress"}
+{"id":"tl-f492f102","ts":"2026-01-15T21:43:33.068915Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-92b1d1c0","ts":"2026-01-15T21:43:33.074242Z","type":"status","status":"in_progress"}
+{"id":"tl-92b1d1c0","ts":"2026-01-15T21:44:22.658999Z","type":"status","status":"open"}
