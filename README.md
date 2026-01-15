@@ -2,6 +2,8 @@
 
 Task tracking for AI coding agents. Helps humans and agents collaborate on work.
 
+> **Warning:** This is an experiment. tlog is a drastically simplified step cousin to [steveyegge/beads](https://github.com/steveyegge/beads), testing the thesis that beads does too much. tlog intentionally does less to enable more flexibility in workflows. If you want battle-tested, use beads.
+
 ## What it does
 
 - Agents track their work with simple CLI commands
@@ -31,7 +33,7 @@ This project uses tlog for task tracking. Run `tlog prime` to get started.
 
 ## Inspiration
 
-Heavily inspired by [steveyegge/beads](https://github.com/steveyegge/beads), which is fantastic. tlog aims to be a lighter-weight alternative.
+[steveyegge/beads](https://github.com/steveyegge/beads)
 
 ## License
 
