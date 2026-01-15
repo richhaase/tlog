@@ -204,7 +204,7 @@ func CmdShow(root, id string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("task not found: %s", id)
 	}
 
-	// Get dependency status
+	// Get dependency status (tasks this task depends on)
 	depStatus := make([]map[string]interface{}, 0)
 	for _, depID := range task.Deps {
 		if depTask, ok := tasks[depID]; ok {
@@ -216,9 +216,41 @@ func CmdShow(root, id string) (map[string]interface{}, error) {
 		}
 	}
 
+	// Get blocked_by (tasks that have this task in their blocks array)
+	blockedBy := make([]map[string]interface{}, 0)
+	for _, other := range tasks {
+		for _, blockID := range other.Blocks {
+			if blockID == id {
+				blockedBy = append(blockedBy, map[string]interface{}{
+					"id":     other.ID,
+					"title":  other.Title,
+					"status": other.Status,
+				})
+				break
+			}
+		}
+	}
+
+	// Get dependents (tasks that have this task in their deps array)
+	dependents := make([]map[string]interface{}, 0)
+	for _, other := range tasks {
+		for _, depID := range other.Deps {
+			if depID == id {
+				dependents = append(dependents, map[string]interface{}{
+					"id":     other.ID,
+					"title":  other.Title,
+					"status": other.Status,
+				})
+				break
+			}
+		}
+	}
+
 	return map[string]interface{}{
 		"task":       task,
 		"dep_status": depStatus,
+		"blocked_by": blockedBy,
+		"dependents": dependents,
 	}, nil
 }
 

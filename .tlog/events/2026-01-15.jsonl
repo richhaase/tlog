@@ -50,3 +50,5 @@
 {"id":"tl-476ff6c2","ts":"2026-01-15T05:20:18.723954Z","type":"status","status":"done"}
 {"id":"tl-b49e8a74","ts":"2026-01-15T05:21:48.506503Z","type":"status","status":"done"}
 {"id":"tl-2f4d2bc4","ts":"2026-01-15T05:22:36.223033Z","type":"create","title":"Add status distinction for wontfix/rejected","status":"open","notes":"Currently only open/done. Need way to mark tasks as rejected/wontfix vs completed. Options: add status values, use labels, or add resolution field."}
+{"id":"tl-2f4d2bc4","ts":"2026-01-15T05:27:05.732384Z","type":"status","status":"done","resolution":"completed","notes":"Implemented resolution field"}
+{"id":"tl-288797e5","ts":"2026-01-15T05:28:42.909698Z","type":"status","status":"done","resolution":"wontfix","notes":"Covered by done --wontfix, unnecessary complexity"}
