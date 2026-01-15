@@ -69,7 +69,7 @@ Commands:
     --remove              Remove instead of add
   block <id> <block-id>   Add blocking relationship
     --remove              Remove instead of add
-  graph [--format <f>]    Show dependency graph (json|mermaid)
+  graph                   Show dependency tree
   prime                   Get AI agent context
   labels                  Show labels in use and conventions
   sync [-m|--message <m>] Commit .tlog to git
@@ -424,27 +424,15 @@ func main() {
 		}
 
 	case "graph":
-		format := "json"
-		for i := 0; i < len(args); i++ {
-			if args[i] == "--format" && i+1 < len(args) {
-				format = args[i+1]
-				i++
-			}
-		}
-
 		root, err := tlog.RequireTlog()
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdGraph(root, format)
+		result, err := tlog.CmdGraph(root)
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		if format == "mermaid" {
-			fmt.Println(result)
-		} else {
-			outputJSON(result)
-		}
+		fmt.Print(result)
 
 	case "prime":
 		root, err := tlog.RequireTlog()

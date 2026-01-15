@@ -442,49 +442,126 @@ func CmdBlock(root, id, blockID, action string) (map[string]interface{}, error) 
 	}, nil
 }
 
-// CmdGraph returns the dependency graph
-func CmdGraph(root string, format string) (interface{}, error) {
+// CmdGraph returns the dependency graph as readable text
+func CmdGraph(root string) (string, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	tasks := ComputeState(events)
-	graph := BuildDependencyGraph(tasks)
-
-	if format == "mermaid" {
-		return GraphToMermaid(graph, tasks), nil
-	}
-
-	return graph, nil
+	return FormatDependencyTree(tasks), nil
 }
 
-// GraphToMermaid converts a graph to Mermaid diagram format
-func GraphToMermaid(graph Graph, tasks map[string]*Task) string {
+// FormatDependencyTree renders tasks as a readable dependency tree
+func FormatDependencyTree(tasks map[string]*Task) string {
 	var sb strings.Builder
-	sb.WriteString("graph TD\n")
 
-	// Write nodes
-	for _, node := range graph.Nodes {
-		status := "○" // open
-		if node.Status == StatusInProgress {
-			status = "◐" // in_progress
-		} else if node.Status == StatusDone {
-			status = "●" // done
+	// Find non-done tasks
+	active := make(map[string]*Task)
+	for id, t := range tasks {
+		if t.Status != StatusDone {
+			active[id] = t
 		}
-		title := node.Title
-		if len(title) > 30 {
-			title = title[:30]
-		}
-		sb.WriteString(fmt.Sprintf("    %s[\"%s %s\"]\n", node.ID, status, title))
 	}
 
-	// Write edges
-	for _, edge := range graph.Edges {
-		sb.WriteString(fmt.Sprintf("    %s --> %s\n", edge.From, edge.To))
+	if len(active) == 0 {
+		return "No active tasks"
+	}
+
+	// Find which active tasks are dependencies of other active tasks
+	isDep := make(map[string]bool)
+	for _, t := range active {
+		for _, depID := range t.Deps {
+			if _, ok := active[depID]; ok {
+				isDep[depID] = true
+			}
+		}
+	}
+
+	// Root tasks: active tasks that no other active task depends on
+	var roots []*Task
+	for id, t := range active {
+		if !isDep[id] {
+			roots = append(roots, t)
+		}
+	}
+
+	// Sort: in_progress first, then open, then by title
+	sort.Slice(roots, func(i, j int) bool {
+		if roots[i].Status != roots[j].Status {
+			return roots[i].Status == StatusInProgress
+		}
+		return roots[i].Title < roots[j].Title
+	})
+
+	// Render each root task with its dependency tree
+	for i, task := range roots {
+		if i > 0 {
+			sb.WriteString("\n")
+		}
+		seen := make(map[string]bool)
+		renderTaskTree(&sb, task, tasks, "", "", seen)
 	}
 
 	return sb.String()
+}
+
+// renderTaskTree recursively renders a task and its dependencies
+func renderTaskTree(sb *strings.Builder, task *Task, tasks map[string]*Task, prefix string, connector string, seen map[string]bool) {
+	// Cycle detection
+	if seen[task.ID] {
+		return
+	}
+	seen[task.ID] = true
+
+	// Status symbol
+	status := "○" // open
+	if task.Status == StatusInProgress {
+		status = "◐"
+	} else if task.Status == StatusDone {
+		status = "●"
+	}
+
+	// Render this task
+	fmt.Fprintf(sb, "%s%s%s %s\n", prefix, connector, status, task.Title)
+
+	// Get dependencies
+	var deps []*Task
+	for _, depID := range task.Deps {
+		if dep, ok := tasks[depID]; ok && !seen[dep.ID] {
+			deps = append(deps, dep)
+		}
+	}
+
+	if len(deps) == 0 {
+		return
+	}
+
+	// Sort dependencies: non-done first
+	sort.Slice(deps, func(i, j int) bool {
+		if (deps[i].Status == StatusDone) != (deps[j].Status == StatusDone) {
+			return deps[i].Status != StatusDone
+		}
+		return deps[i].Title < deps[j].Title
+	})
+
+	// Calculate child prefix based on current connector
+	childPrefix := prefix
+	if connector == "├─ " {
+		childPrefix = prefix + "│  "
+	} else if connector == "└─ " {
+		childPrefix = prefix + "   "
+	}
+
+	for i, dep := range deps {
+		isLast := i == len(deps)-1
+		childConnector := "├─ "
+		if isLast {
+			childConnector = "└─ "
+		}
+		renderTaskTree(sb, dep, tasks, childPrefix, childConnector, seen)
+	}
 }
 
 // CmdPrime generates context for AI agents
