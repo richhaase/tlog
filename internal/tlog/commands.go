@@ -277,8 +277,11 @@ func CmdList(root string, statusFilter string, labelFilter string) (map[string]i
 		taskList = append(taskList, task)
 	}
 
-	// Sort by created time descending
+	// Sort by priority (ascending), then created time (descending)
 	sort.Slice(taskList, func(i, j int) bool {
+		if taskList[i].Priority != taskList[j].Priority {
+			return taskList[i].Priority < taskList[j].Priority
+		}
 		return taskList[i].Created.After(taskList[j].Created)
 	})
 
@@ -361,8 +364,11 @@ func CmdReady(root string) (map[string]interface{}, error) {
 	tasks := ComputeState(events)
 	ready := GetReadyTasks(tasks)
 
-	// Sort by created time
+	// Sort by priority (ascending), then created time (ascending)
 	sort.Slice(ready, func(i, j int) bool {
+		if ready[i].Priority != ready[j].Priority {
+			return ready[i].Priority < ready[j].Priority
+		}
 		return ready[i].Created.Before(ready[j].Created)
 	})
 
