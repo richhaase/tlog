@@ -21,7 +21,7 @@ func CmdInit(path string) (map[string]interface{}, error) {
 }
 
 // CmdCreate creates a new task
-func CmdCreate(root, title string, deps, blocks, labels []string, notes string) (map[string]interface{}, error) {
+func CmdCreate(root, title string, deps, blocks, labels []string, description, notes string) (map[string]interface{}, error) {
 	id := GenerateID()
 	now := NowISO()
 
@@ -36,15 +36,16 @@ func CmdCreate(root, title string, deps, blocks, labels []string, notes string) 
 	}
 
 	event := Event{
-		ID:        id,
-		Timestamp: now,
-		Type:      EventCreate,
-		Title:     title,
-		Status:    StatusOpen,
-		Deps:      deps,
-		Blocks:    blocks,
-		Labels:    labels,
-		Notes:     notes,
+		ID:          id,
+		Timestamp:   now,
+		Type:        EventCreate,
+		Title:       title,
+		Status:      StatusOpen,
+		Deps:        deps,
+		Blocks:      blocks,
+		Labels:      labels,
+		Description: description,
+		Notes:       notes,
 	}
 
 	if err := AppendEvent(root, event); err != nil {
@@ -167,8 +168,8 @@ func CmdReopen(root, id string) (map[string]interface{}, error) {
 	}, nil
 }
 
-// CmdUpdate updates a task's title, notes, or labels
-func CmdUpdate(root, id, title, notes string, labels []string) (map[string]interface{}, error) {
+// CmdUpdate updates a task's title, description, notes, or labels
+func CmdUpdate(root, id, title, description, notes string, labels []string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -181,12 +182,13 @@ func CmdUpdate(root, id, title, notes string, labels []string) (map[string]inter
 
 	now := NowISO()
 	event := Event{
-		ID:        id,
-		Timestamp: now,
-		Type:      EventUpdate,
-		Title:     title,
-		Notes:     notes,
-		Labels:    labels,
+		ID:          id,
+		Timestamp:   now,
+		Type:        EventUpdate,
+		Title:       title,
+		Description: description,
+		Notes:       notes,
+		Labels:      labels,
 	}
 
 	if err := AppendEvent(root, event); err != nil {

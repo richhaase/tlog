@@ -76,3 +76,11 @@
 {"id":"tl-0f7b0e37","ts":"2026-01-15T15:42:12.171685Z","type":"status","status":"open"}
 {"id":"tl-0f7b0e37","ts":"2026-01-15T15:42:26.86202Z","type":"status","status":"in_progress"}
 {"id":"tl-0f7b0e37","ts":"2026-01-15T15:42:26.865371Z","type":"status","status":"done","resolution":"completed","notes":"Implemented claim command with in_progress status"}
+{"id":"tl-bbe20b13","ts":"2026-01-15T16:01:50.448032Z","type":"status","status":"in_progress"}
+{"id":"tl-bbe20b13","ts":"2026-01-15T16:21:33.242899Z","type":"status","status":"done","resolution":"completed","notes":"Implemented description/notes separation with append semantics for notes"}
+{"id":"tl-2c7b365b","ts":"2026-01-15T16:21:55.105669Z","type":"status","status":"done","resolution":"completed","notes":"Semantics: description overwrites, notes appends (newline separated)"}
+{"id":"tl-d9893dd5","ts":"2026-01-15T16:21:57.471165Z","type":"status","status":"done","resolution":"completed","notes":"Added Description field to Event and Task structs in types.go"}
+{"id":"tl-7eb25ae6","ts":"2026-01-15T16:21:58.870352Z","type":"status","status":"done","resolution":"completed","notes":"Added --description flag to create command"}
+{"id":"tl-56290380","ts":"2026-01-15T16:22:00.190599Z","type":"status","status":"done","resolution":"completed","notes":"Update command: --description overwrites, --notes appends"}
+{"id":"tl-98df0a60","ts":"2026-01-15T16:22:01.457366Z","type":"status","status":"done","resolution":"completed","notes":"Show output displays both description and notes fields"}
+{"id":"tl-67ef336e","ts":"2026-01-15T16:22:03.123462Z","type":"status","status":"done","resolution":"completed","notes":"Existing tests pass, manual testing verified all semantics"}

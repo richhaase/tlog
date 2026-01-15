@@ -43,17 +43,19 @@ Commands:
     --dep <id>            Add dependency (repeatable)
     --blocks <id>         Add blocking relationship (repeatable)
     --label <label>       Add label (repeatable)
-    --notes <text>        Add notes
+    --description <text>  Set description (what this task is)
+    --notes <text>        Add notes (what happened)
   done <id>               Mark task as done (resolution: completed)
     --wontfix             Resolution: wontfix
     --duplicate           Resolution: duplicate
-    --note <text>         Add closing note
+    --note <text>         Append closing note
   claim <id>              Mark task as in_progress
-    --note <text>         Add note
+    --note <text>         Append note
   reopen <id>             Reopen task (from done or in_progress)
   update <id>             Update task
     --title <text>        New title
-    --notes <text>        New notes
+    --description <text>  Set description (overwrites)
+    --notes <text>        Append notes
     --label <label>       Set labels (repeatable)
   list [--status <s>]     List tasks (open|done|all, default: open)
   show <id>               Show task details
@@ -99,7 +101,7 @@ func main() {
 		}
 		title := args[0]
 		var deps, blocks, labels []string
-		var notes string
+		var description, notes string
 
 		for i := 1; i < len(args); i++ {
 			switch args[i] {
@@ -118,6 +120,11 @@ func main() {
 					labels = append(labels, args[i+1])
 					i++
 				}
+			case "--description":
+				if i+1 < len(args) {
+					description = args[i+1]
+					i++
+				}
 			case "--notes":
 				if i+1 < len(args) {
 					notes = args[i+1]
@@ -130,7 +137,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, notes)
+		result, err := tlog.CmdCreate(root, title, deps, blocks, labels, description, notes)
 		if err != nil {
 			errorJSON(err.Error())
 		}
@@ -214,7 +221,7 @@ func main() {
 			errorJSON(err.Error())
 		}
 		id := resolveID(root, args[0])
-		var title, notes string
+		var title, description, notes string
 		var labels []string
 
 		for i := 1; i < len(args); i++ {
@@ -222,6 +229,11 @@ func main() {
 			case "--title":
 				if i+1 < len(args) {
 					title = args[i+1]
+					i++
+				}
+			case "--description":
+				if i+1 < len(args) {
+					description = args[i+1]
 					i++
 				}
 			case "--notes":
@@ -237,7 +249,7 @@ func main() {
 			}
 		}
 
-		result, err := tlog.CmdUpdate(root, id, title, notes, labels)
+		result, err := tlog.CmdUpdate(root, id, title, description, notes, labels)
 		if err != nil {
 			errorJSON(err.Error())
 		}

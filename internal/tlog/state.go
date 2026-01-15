@@ -10,15 +10,16 @@ func ComputeState(events []Event) map[string]*Task {
 		switch event.Type {
 		case EventCreate:
 			tasks[event.ID] = &Task{
-				ID:      event.ID,
-				Title:   event.Title,
-				Status:  StatusOpen,
-				Deps:    event.Deps,
-				Blocks:  event.Blocks,
-				Created: event.Timestamp,
-				Updated: event.Timestamp,
-				Labels:  event.Labels,
-				Notes:   event.Notes,
+				ID:          event.ID,
+				Title:       event.Title,
+				Status:      StatusOpen,
+				Deps:        event.Deps,
+				Blocks:      event.Blocks,
+				Created:     event.Timestamp,
+				Updated:     event.Timestamp,
+				Labels:      event.Labels,
+				Description: event.Description,
+				Notes:       event.Notes,
 			}
 			if tasks[event.ID].Deps == nil {
 				tasks[event.ID].Deps = []string{}
@@ -35,7 +36,7 @@ func ComputeState(events []Event) map[string]*Task {
 				task.Status = event.Status
 				task.Resolution = event.Resolution
 				if event.Notes != "" {
-					task.Notes = event.Notes
+					task.Notes = appendNote(task.Notes, event.Notes)
 				}
 				task.Updated = event.Timestamp
 			}
@@ -65,8 +66,11 @@ func ComputeState(events []Event) map[string]*Task {
 				if event.Title != "" {
 					task.Title = event.Title
 				}
+				if event.Description != "" {
+					task.Description = event.Description
+				}
 				if event.Notes != "" {
-					task.Notes = event.Notes
+					task.Notes = appendNote(task.Notes, event.Notes)
 				}
 				if event.Labels != nil {
 					task.Labels = event.Labels
@@ -162,6 +166,15 @@ func BuildDependencyGraph(tasks map[string]*Task) Graph {
 }
 
 // Helper functions
+
+// appendNote appends a new note to existing notes, separated by newlines
+func appendNote(existing, newNote string) string {
+	if existing == "" {
+		return newNote
+	}
+	return existing + "\n" + newNote
+}
+
 func appendUnique(slice []string, item string) []string {
 	for _, s := range slice {
 		if s == item {
