@@ -201,3 +201,16 @@
 {"id":"tl-2a3b88d6","ts":"2026-01-15T22:27:26.74069Z","type":"create","title":"Fix lint issues","status":"open","priority":1,"description":"Fix 9 lint issues found by golangci-lint: 5 errcheck (unchecked error returns in storage.go, tlog_test.go), 4 staticcheck (use tagged switch in commands.go, state.go)"}
 {"id":"tl-2a3b88d6","ts":"2026-01-15T22:28:12.429739Z","type":"status","status":"in_progress"}
 {"id":"tl-2a3b88d6","ts":"2026-01-15T22:31:42.392403Z","type":"status","status":"done","resolution":"completed","notes":"Fixed all 9 lint issues: 5 errcheck (added explicit error ignoring with _ =), 4 staticcheck (converted if-else chains to switch statements)"}
+{"id":"tl-f86bbcb9","ts":"2026-01-15T23:15:35.064062Z","type":"status","status":"in_progress","notes":"Starting review of deps/blocks/graph behavior"}
+{"id":"tl-5eea49cf","ts":"2026-01-15T23:16:36.600042Z","type":"create","title":"Parent task","status":"open","notes":"Test parent"}
+{"id":"tl-107b5231","ts":"2026-01-15T23:23:53.934502Z","type":"create","title":"Child via dep","status":"open","deps":["tl-5eea49cf"],"notes":"Test child using --dep"}
+{"id":"tl-05655163","ts":"2026-01-15T23:23:56.486382Z","type":"create","title":"Blocker task","status":"open","blocks":["tl-5eea49cf"],"notes":"Test using --blocks"}
+{"id":"tl-6447ce5f","ts":"2026-01-15T23:24:52.477861Z","type":"create","title":"Grandchild task","status":"open","deps":["tl-107b5231"],"notes":"Depends on Child via dep"}
+{"id":"tl-5eea49cf","ts":"2026-01-15T23:28:12.983994Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task"}
+{"id":"tl-107b5231","ts":"2026-01-15T23:28:12.990122Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task"}
+{"id":"tl-05655163","ts":"2026-01-15T23:28:12.99598Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task"}
+{"id":"tl-6447ce5f","ts":"2026-01-15T23:28:13.001457Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task"}
+{"id":"tl-6d58a6ca","ts":"2026-01-15T23:31:37.904855Z","type":"create","title":"Remove blocks, keep only deps","status":"open","priority":3,"description":"Simplify relationship model by removing blocks. Having both deps and blocks is redundant - they express the same ordering constraint from opposite directions. Keeping only deps is simpler and matches most task systems."}
+{"id":"tl-f86bbcb9","ts":"2026-01-15T23:31:46.376346Z","type":"status","status":"done","resolution":"completed","notes":"Fixed graph to render blocks relationships. However, identified that having both deps and blocks is confusing - they're redundant. Created tl-6d58a6ca to remove blocks."}
+{"id":"tl-6d58a6ca","ts":"2026-01-15T23:33:00.538326Z","type":"status","status":"in_progress","notes":"Starting implementation"}
+{"id":"tl-6d58a6ca","ts":"2026-01-15T23:39:33.81543Z","type":"status","status":"done","resolution":"completed","notes":"Removed blocks from: types.go (Event, Task), state.go (ComputeState, GetReadyTasks, BuildDependencyGraph), commands.go (CmdCreate, CmdShow, CmdBlock, FormatDependencyTree), main.go (create flags, block command), and tests."}
