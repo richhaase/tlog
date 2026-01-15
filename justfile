@@ -64,6 +64,18 @@ vet:
     go vet ./...
     @echo "Vet passed!"
 
+# Run golangci-lint v2
+lint:
+    @echo "Running golangci-lint v2..."
+    go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0 run --timeout=10m ./...
+    @echo "Linting passed!"
+
+# Run staticcheck
+staticcheck:
+    @echo "Running staticcheck..."
+    go run honnef.co/go/tools/cmd/staticcheck@latest ./...
+    @echo "Staticcheck passed!"
+
 # Tidy go modules
 tidy:
     @echo "Tidying go modules..."
@@ -79,5 +91,5 @@ clean:
     go clean -testcache
     @echo "Build artifacts and test cache cleaned"
 
-# Run all quality checks (format, vet, tests)
-check: fmt vet test
+# Run all quality checks (format, lint, vet, staticcheck, tests)
+check: fmt lint vet staticcheck test

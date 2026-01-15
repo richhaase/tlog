@@ -533,11 +533,14 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 	seen[task.ID] = true
 
 	// Status symbol
-	status := "○" // open
-	if task.Status == StatusInProgress {
+	var status string
+	switch task.Status {
+	case StatusInProgress:
 		status = "◐"
-	} else if task.Status == StatusDone {
+	case StatusDone:
 		status = "●"
+	default:
+		status = "○" // open
 	}
 
 	// Render this task
@@ -558,11 +561,14 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 	})
 
 	// Calculate child prefix based on current connector
-	childPrefix := prefix
-	if connector == "├─ " {
+	var childPrefix string
+	switch connector {
+	case "├─ ":
 		childPrefix = prefix + "│  "
-	} else if connector == "└─ " {
+	case "└─ ":
 		childPrefix = prefix + "   "
+	default:
+		childPrefix = prefix
 	}
 
 	for i, dep := range deps {

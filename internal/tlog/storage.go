@@ -52,7 +52,7 @@ func RequireTlog() (string, error) {
 func GenerateID() string {
 	timestamp := time.Now().UnixNano()
 	randomBytes := make([]byte, 16)
-	rand.Read(randomBytes)
+	_, _ = rand.Read(randomBytes)
 
 	data := fmt.Sprintf("%d%x", timestamp, randomBytes)
 	hash := sha256.Sum256([]byte(data))
@@ -81,7 +81,7 @@ func AppendEvent(root string, event Event) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	data, err := json.Marshal(event)
 	if err != nil {
@@ -126,12 +126,12 @@ func LoadAllEvents(root string) ([]Event, error) {
 		for scanner.Scan() {
 			var event Event
 			if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
-				f.Close()
+				_ = f.Close()
 				return nil, err
 			}
 			events = append(events, event)
 		}
-		f.Close()
+		_ = f.Close()
 
 		if err := scanner.Err(); err != nil {
 			return nil, err

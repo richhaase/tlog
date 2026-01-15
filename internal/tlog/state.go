@@ -48,9 +48,10 @@ func ComputeState(events []Event) map[string]*Task {
 
 		case EventDep:
 			if task, ok := tasks[event.ID]; ok {
-				if event.Action == "add" {
+				switch event.Action {
+				case "add":
 					task.Deps = appendUnique(task.Deps, event.Dep)
-				} else if event.Action == "remove" {
+				case "remove":
 					task.Deps = removeItem(task.Deps, event.Dep)
 				}
 				task.Updated = event.Timestamp
@@ -58,9 +59,10 @@ func ComputeState(events []Event) map[string]*Task {
 
 		case EventBlock:
 			if task, ok := tasks[event.ID]; ok {
-				if event.Action == "add" {
+				switch event.Action {
+				case "add":
 					task.Blocks = appendUnique(task.Blocks, event.Block)
-				} else if event.Action == "remove" {
+				case "remove":
 					task.Blocks = removeItem(task.Blocks, event.Block)
 				}
 				task.Updated = event.Timestamp
