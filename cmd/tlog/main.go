@@ -391,7 +391,11 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		if action == "add" {
+			fmt.Printf("Dep added: %s -> %s\n", result["id"], result["dep"])
+		} else {
+			fmt.Printf("Dep removed: %s -> %s\n", result["id"], result["dep"])
+		}
 
 	case "block":
 		if len(args) < 2 {
@@ -413,7 +417,11 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		if action == "add" {
+			fmt.Printf("Block added: %s blocks %s\n", result["id"], result["blocks"])
+		} else {
+			fmt.Printf("Block removed: %s blocks %s\n", result["id"], result["blocks"])
+		}
 
 	case "graph":
 		format := "json"
