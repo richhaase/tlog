@@ -97,7 +97,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Initialized: %s\n", result["path"])
 
 	case "create":
 		if len(args) < 1 {
@@ -145,7 +145,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Created: %s %q\n", result["id"], result["title"])
 
 	case "done":
 		if len(args) < 1 {
@@ -177,7 +177,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Done: %s (%s)\n", result["id"], result["resolution"])
 
 	case "claim":
 		if len(args) < 1 {
@@ -199,7 +199,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Claimed: %s\n", result["id"])
 
 	case "unclaim":
 		if len(args) < 1 {
@@ -221,7 +221,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Unclaimed: %s\n", result["id"])
 
 	case "reopen":
 		if len(args) < 1 {
@@ -236,7 +236,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Reopened: %s\n", result["id"])
 
 	case "update":
 		if len(args) < 1 {
@@ -279,7 +279,7 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		fmt.Printf("Updated: %s\n", result["id"])
 
 	case "list":
 		status := "open"

@@ -114,3 +114,21 @@
 {"id":"tl-6a08ce9f","ts":"2026-01-15T20:06:11.36564Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-e9a695f5","ts":"2026-01-15T20:09:31.582928Z","type":"create","title":"Add bulk create from stdin/file","status":"open","labels":["priority:low"],"description":"TBD"}
 {"id":"tl-e9a695f5","ts":"2026-01-15T20:10:21.187777Z","type":"update","title":"Add bulk create"}
+{"id":"tl-bc0dfde5","ts":"2026-01-15T20:17:46.469452Z","type":"create","title":"Convert tlog output from JSON to structured text","status":"open","description":"Default to human-readable text output, add --json flag for machine parsing"}
+{"id":"tl-bc0dfde5","ts":"2026-01-15T20:18:36.687238Z","type":"status","status":"done","resolution":"wontfix","notes":"Redesigning without JSON flag"}
+{"id":"tl-7280f845","ts":"2026-01-15T20:18:46.61769Z","type":"create","title":"Convert tlog to text output","status":"open","description":"Replace JSON output with human-readable text for all commands"}
+{"id":"tl-a9268924","ts":"2026-01-15T20:18:54.785012Z","type":"create","title":"Convert action commands to text","status":"open","deps":["tl-7280f845"],"description":"create, done, claim, unclaim, reopen, update"}
+{"id":"tl-a0a486f1","ts":"2026-01-15T20:18:56.436051Z","type":"create","title":"Convert relationship commands to text","status":"open","deps":["tl-7280f845"],"description":"dep, blocks"}
+{"id":"tl-2f8dba15","ts":"2026-01-15T20:18:58.012176Z","type":"create","title":"Convert query commands to text","status":"open","deps":["tl-7280f845"],"description":"ready, list, show, labels"}
+{"id":"tl-4d57095c","ts":"2026-01-15T20:18:59.262536Z","type":"create","title":"Make mermaid default for graph","status":"open","deps":["tl-7280f845"],"description":"Change default format from JSON to mermaid"}
+{"id":"tl-9c135d2f","ts":"2026-01-15T20:19:08.527586Z","type":"create","title":"Remove JSON output helpers","status":"open","deps":["tl-a9268924","tl-a0a486f1","tl-2f8dba15","tl-4d57095c"],"description":"Clean up outputJSON and related code"}
+{"id":"tl-4d57095c","ts":"2026-01-15T20:20:34.483481Z","type":"update","title":"Convert graph command to text","description":"Replace JSON/mermaid with readable tree format"}
+{"id":"tl-a9268924","ts":"2026-01-15T20:21:37.488726Z","type":"status","status":"in_progress"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:27:40.518546Z","type":"create","title":"Test text output","status":"open","description":"Testing the new text output"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:27:52.286922Z","type":"status","status":"in_progress"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:27:53.531789Z","type":"update","notes":"Testing update"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:28:06.220463Z","type":"status","status":"open"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:28:07.951743Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:28:23.303758Z","type":"status","status":"open"}
+{"id":"tl-ac208dd8","ts":"2026-01-15T20:28:23.308533Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-a9268924","ts":"2026-01-15T20:28:29.833447Z","type":"status","status":"done","resolution":"completed"}
