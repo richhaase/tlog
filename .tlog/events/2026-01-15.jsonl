@@ -132,3 +132,8 @@
 {"id":"tl-ac208dd8","ts":"2026-01-15T20:28:23.303758Z","type":"status","status":"open"}
 {"id":"tl-ac208dd8","ts":"2026-01-15T20:28:23.308533Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-a9268924","ts":"2026-01-15T20:28:29.833447Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-2f8dba15","ts":"2026-01-15T20:33:26.422376Z","type":"status","status":"in_progress"}
+{"id":"tl-2f8dba15","ts":"2026-01-15T20:38:29.059345Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-a0a486f1","ts":"2026-01-15T20:43:56.32092Z","type":"dep","dep":"tl-7280f845","action":"remove"}
+{"id":"tl-4d57095c","ts":"2026-01-15T20:43:58.066569Z","type":"dep","dep":"tl-7280f845","action":"remove"}
+{"id":"tl-7280f845","ts":"2026-01-15T20:44:07.11585Z","type":"dep","dep":"tl-9c135d2f","action":"add"}

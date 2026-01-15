@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/richhaase/tlog/internal/tlog"
 )
@@ -302,7 +303,18 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		tasks := result["tasks"].([]*tlog.Task)
+		if len(tasks) == 0 {
+			fmt.Println("No tasks")
+		} else {
+			for _, t := range tasks {
+				labels := ""
+				if len(t.Labels) > 0 {
+					labels = " [" + strings.Join(t.Labels, ", ") + "]"
+				}
+				fmt.Printf("%s  %s (%s)%s\n", t.ID, t.Title, t.Status, labels)
+			}
+		}
 
 	case "show":
 		if len(args) < 1 {
@@ -317,7 +329,25 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		task := result["task"].(*tlog.Task)
+		fmt.Printf("%s: %s\n", task.ID, task.Title)
+		fmt.Printf("Status: %s\n", task.Status)
+		if task.Description != "" {
+			fmt.Printf("Description: %s\n", task.Description)
+		}
+		if len(task.Labels) > 0 {
+			fmt.Printf("Labels: %s\n", strings.Join(task.Labels, ", "))
+		}
+		if deps, ok := result["dep_status"].([]map[string]interface{}); ok && len(deps) > 0 {
+			fmt.Print("Deps:")
+			for _, d := range deps {
+				fmt.Printf(" %s(%s)", d["id"], d["status"])
+			}
+			fmt.Println()
+		}
+		if task.Notes != "" {
+			fmt.Printf("Notes: %s\n", task.Notes)
+		}
 
 	case "ready":
 		root, err := tlog.RequireTlog()
@@ -328,7 +358,18 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		tasks := result["tasks"].([]*tlog.Task)
+		if len(tasks) == 0 {
+			fmt.Println("No tasks ready")
+		} else {
+			for _, t := range tasks {
+				labels := ""
+				if len(t.Labels) > 0 {
+					labels = " [" + strings.Join(t.Labels, ", ") + "]"
+				}
+				fmt.Printf("%s  %s%s\n", t.ID, t.Title, labels)
+			}
+		}
 
 	case "dep":
 		if len(args) < 2 {
@@ -417,7 +458,15 @@ func main() {
 		if err != nil {
 			errorJSON(err.Error())
 		}
-		outputJSON(result)
+		inUse := result["in_use"].([]string)
+		if len(inUse) > 0 {
+			fmt.Println("Labels in use:")
+			for _, label := range inUse {
+				fmt.Printf("  %s\n", label)
+			}
+		} else {
+			fmt.Println("No labels in use")
+		}
 
 	case "sync":
 		message := ""
