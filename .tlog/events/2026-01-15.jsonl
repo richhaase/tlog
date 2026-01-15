@@ -137,3 +137,14 @@
 {"id":"tl-a0a486f1","ts":"2026-01-15T20:43:56.32092Z","type":"dep","dep":"tl-7280f845","action":"remove"}
 {"id":"tl-4d57095c","ts":"2026-01-15T20:43:58.066569Z","type":"dep","dep":"tl-7280f845","action":"remove"}
 {"id":"tl-7280f845","ts":"2026-01-15T20:44:07.11585Z","type":"dep","dep":"tl-9c135d2f","action":"add"}
+{"id":"tl-cdbacde7","ts":"2026-01-15T20:47:44.136855Z","type":"create","title":"Migrate cli to Cobra","status":"open","description":"custom cli handling is error prone and unnecessary"}
+{"id":"tl-a0a486f1","ts":"2026-01-15T20:49:00.707503Z","type":"status","status":"in_progress"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:10.330425Z","type":"create","title":"Test task A","status":"open"}
+{"id":"tl-b9485efe","ts":"2026-01-15T20:50:10.335008Z","type":"create","title":"Test task B","status":"open"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:15.299727Z","type":"dep","dep":"tl-b9485efe","action":"add"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:20.431509Z","type":"dep","dep":"tl-b9485efe","action":"remove"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:25.13038Z","type":"block","block":"tl-b9485efe","action":"add"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:31.665678Z","type":"block","block":"tl-b9485efe","action":"remove"}
+{"id":"tl-8ea3088b","ts":"2026-01-15T20:50:40.832691Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-b9485efe","ts":"2026-01-15T20:50:40.838398Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-a0a486f1","ts":"2026-01-15T20:51:21.036887Z","type":"status","status":"done","resolution":"completed"}
