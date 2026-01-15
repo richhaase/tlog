@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rdh/tlog/internal/tlog"
+	"github.com/richhaase/tlog/internal/tlog"
 )
 
 func outputJSON(v interface{}) {
