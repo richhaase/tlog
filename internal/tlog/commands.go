@@ -235,8 +235,8 @@ func CmdUpdate(root, id, title, description, notes string, labels []string, prio
 	}, nil
 }
 
-// CmdList lists tasks with optional status and label filters
-func CmdList(root string, statusFilter string, labelFilter string) (map[string]interface{}, error) {
+// CmdList lists tasks with optional status, label, and priority filters
+func CmdList(root string, statusFilter string, labelFilter string, priorityFilter string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -253,6 +253,13 @@ func CmdList(root string, statusFilter string, labelFilter string) (map[string]i
 			(statusFilter == "done" && task.Status == StatusDone)
 		if !statusMatch {
 			continue
+		}
+
+		// Check priority filter
+		if priorityFilter != "" {
+			if task.Priority.String() != priorityFilter {
+				continue
+			}
 		}
 
 		// Check label filter

@@ -78,11 +78,16 @@ func ComputeState(events []Event) map[string]*Task {
 	return tasks
 }
 
-// GetReadyTasks returns tasks that are open and have all deps done
+// GetReadyTasks returns tasks that are open, have all deps done, and are not backlog priority
 func GetReadyTasks(tasks map[string]*Task) []*Task {
 	var ready []*Task
 	for _, task := range tasks {
 		if task.Status != StatusOpen {
+			continue
+		}
+
+		// Exclude backlog priority tasks
+		if task.Priority == PriorityBacklog {
 			continue
 		}
 

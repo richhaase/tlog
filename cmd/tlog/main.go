@@ -225,12 +225,13 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			status, _ := cmd.Flags().GetString("status")
 			label, _ := cmd.Flags().GetString("label")
+			priority, _ := cmd.Flags().GetString("priority")
 
 			root, err := tlog.RequireTlog()
 			if err != nil {
 				exitError(err.Error())
 			}
-			result, err := tlog.CmdList(root, status, label)
+			result, err := tlog.CmdList(root, status, label, priority)
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -253,6 +254,7 @@ func init() {
 	}
 	listCmd.Flags().String("status", "open", "Filter by status (open|in_progress|done|all)")
 	listCmd.Flags().String("label", "", "Filter by label")
+	listCmd.Flags().String("priority", "", "Filter by priority (critical|high|medium|low|backlog)")
 	rootCmd.AddCommand(listCmd)
 
 	// Show command
@@ -317,6 +319,34 @@ func init() {
 					}
 					if len(t.Labels) > 0 {
 						extra += " [" + strings.Join(t.Labels, ", ") + "]"
+					}
+					fmt.Printf("%s  %s%s\n", t.ID, t.Title, extra)
+				}
+			}
+		},
+	})
+
+	// Backlog command
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "backlog",
+		Short: "List backlog tasks",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			result, err := tlog.CmdList(root, "open", "", "backlog")
+			if err != nil {
+				exitError(err.Error())
+			}
+			tasks := result["tasks"].([]*tlog.Task)
+			if len(tasks) == 0 {
+				fmt.Println("No backlog tasks")
+			} else {
+				for _, t := range tasks {
+					extra := ""
+					if len(t.Labels) > 0 {
+						extra = " [" + strings.Join(t.Labels, ", ") + "]"
 					}
 					fmt.Printf("%s  %s%s\n", t.ID, t.Title, extra)
 				}
