@@ -364,14 +364,15 @@ func init() {
 
 	// Dep command
 	depCmd := &cobra.Command{
-		Use:   "dep <id> <dep-id>",
-		Short: "Add dependency",
-		Args:  cobra.ExactArgs(2),
+		Use:   "dep <id> --needs <dep-ids...>",
+		Short: "Add or remove dependencies",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			remove, _ := cmd.Flags().GetBool("remove")
-			action := "add"
-			if remove {
-				action = "remove"
+			needs, _ := cmd.Flags().GetStringSlice("needs")
+			remove, _ := cmd.Flags().GetStringSlice("remove")
+
+			if len(needs) == 0 && len(remove) == 0 {
+				exitError("must specify --needs or --remove with one or more task IDs")
 			}
 
 			root, err := tlog.RequireTlog()
@@ -379,19 +380,30 @@ func init() {
 				exitError(err.Error())
 			}
 			id := resolveID(root, args[0])
-			depID := resolveID(root, args[1])
-			result, err := tlog.CmdDep(root, id, depID, action)
-			if err != nil {
-				exitError(err.Error())
-			}
-			if action == "add" {
+
+			// Add dependencies
+			for _, dep := range needs {
+				depID := resolveID(root, dep)
+				result, err := tlog.CmdDep(root, id, depID, "add")
+				if err != nil {
+					exitError(err.Error())
+				}
 				fmt.Printf("Dep added: %s -> %s\n", result["id"], result["dep"])
-			} else {
+			}
+
+			// Remove dependencies
+			for _, dep := range remove {
+				depID := resolveID(root, dep)
+				result, err := tlog.CmdDep(root, id, depID, "remove")
+				if err != nil {
+					exitError(err.Error())
+				}
 				fmt.Printf("Dep removed: %s -> %s\n", result["id"], result["dep"])
 			}
 		},
 	}
-	depCmd.Flags().Bool("remove", false, "Remove instead of add")
+	depCmd.Flags().StringSlice("needs", nil, "Add dependencies (task must complete before this one)")
+	depCmd.Flags().StringSlice("remove", nil, "Remove dependencies")
 	rootCmd.AddCommand(depCmd)
 
 	// Graph command
