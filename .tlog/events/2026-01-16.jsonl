@@ -9,3 +9,16 @@
 {"id":"tl-3b09a291","ts":"2026-01-16T01:52:45.379926Z","type":"create","title":"Convert justfile to Makefile and update documentation","status":"open","priority":1}
 {"id":"tl-3b09a291","ts":"2026-01-16T01:53:23.047961Z","type":"status","status":"in_progress"}
 {"id":"tl-3b09a291","ts":"2026-01-16T01:54:25.453466Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-84c5a6cb","ts":"2026-01-16T22:58:11.967821Z","type":"create","title":"Invert graph command to show goal decomposition (root=goal, leaves=ready tasks)","status":"open","description":"Change graph visualization so parent goals are at root, subtasks/dependencies are children. Leaves should match what 'ready' returns.","notes":"Research current implementation first. Decompose into subtasks if the change is non-trivial."}
+{"id":"tl-c40a1f99","ts":"2026-01-16T23:08:01.321017Z","type":"create","title":"Add --for flag to create command","status":"open","description":"Add --for PARENT flag that automatically adds the new task as a dependency of PARENT. Supports the decomposition workflow: create subtasks for a goal without a separate dep call.","notes":"Example: tlog create \"Parse output\" --for tl-abc123 creates a new task and makes it a dependency of tl-abc123."}
+{"id":"tl-c4761a45","ts":"2026-01-16T23:09:05.673433Z","type":"create","title":"Update dep command to use --needs flag with multiple tasks","status":"open","description":"Change dep syntax from 'tlog dep A B' to 'tlog dep A --needs B [C D ...]'. Eliminates argument order ambiguity and supports adding multiple dependencies at once.","notes":"Example: tlog dep tl-abc123 --needs tl-def456 tl-ghi789"}
+{"id":"tl-c40a1f99","ts":"2026-01-16T23:10:02.778014Z","type":"status","status":"in_progress"}
+{"id":"tl-8a056440","ts":"2026-01-16T23:12:04.284817Z","type":"create","title":"Test parent task","status":"open","description":"A parent task to test --for flag"}
+{"id":"tl-7faa36bb","ts":"2026-01-16T23:12:11.93468Z","type":"create","title":"Test subtask","status":"open"}
+{"id":"tl-8a056440","ts":"2026-01-16T23:12:11.93539Z","type":"dep","dep":"tl-7faa36bb","action":"add"}
+{"id":"tl-385e6fd9","ts":"2026-01-16T23:12:36.487444Z","type":"create","title":"Another subtask","status":"open"}
+{"id":"tl-8a056440","ts":"2026-01-16T23:12:36.487976Z","type":"dep","dep":"tl-385e6fd9","action":"add"}
+{"id":"tl-8a056440","ts":"2026-01-16T23:12:56.828544Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task, cleaning up"}
+{"id":"tl-7faa36bb","ts":"2026-01-16T23:12:56.900528Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task, cleaning up"}
+{"id":"tl-385e6fd9","ts":"2026-01-16T23:12:56.979951Z","type":"status","status":"done","resolution":"wontfix","notes":"Test task, cleaning up"}
+{"id":"tl-c40a1f99","ts":"2026-01-16T23:13:12.052138Z","type":"status","status":"done","resolution":"completed","notes":"Implemented --for flag. Creates task and adds it as dependency of parent in one operation."}
