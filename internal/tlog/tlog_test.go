@@ -3,7 +3,6 @@ package tlog
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 )
@@ -12,11 +11,8 @@ func TestGenerateID(t *testing.T) {
 	id1 := GenerateID()
 	id2 := GenerateID()
 
-	if !strings.HasPrefix(id1, "tl-") {
-		t.Errorf("ID should start with 'tl-', got %s", id1)
-	}
-	if len(id1) != 11 { // "tl-" + 8 hex chars
-		t.Errorf("ID should be 11 chars, got %d", len(id1))
+	if len(id1) != 8 { // 8 hex chars
+		t.Errorf("ID should be 8 chars, got %d", len(id1))
 	}
 	if id1 == id2 {
 		t.Error("IDs should be unique")
@@ -28,7 +24,7 @@ func TestComputeState(t *testing.T) {
 
 	events := []Event{
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now,
 			Type:      EventCreate,
 			Title:     "Task 1",
@@ -36,15 +32,15 @@ func TestComputeState(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(time.Second),
 			Type:      EventCreate,
 			Title:     "Task 2",
 			Status:    StatusOpen,
-			Deps:      []string{"tl-001"},
+			Deps:      []string{"a0000001"},
 		},
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now.Add(2 * time.Second),
 			Type:      EventStatus,
 			Status:    StatusDone,
@@ -57,14 +53,14 @@ func TestComputeState(t *testing.T) {
 		t.Errorf("Expected 2 tasks, got %d", len(tasks))
 	}
 
-	task1 := tasks["tl-001"]
+	task1 := tasks["a0000001"]
 	if task1.Status != StatusDone {
 		t.Errorf("Task 1 should be done, got %s", task1.Status)
 	}
 
-	task2 := tasks["tl-002"]
-	if len(task2.Deps) != 1 || task2.Deps[0] != "tl-001" {
-		t.Errorf("Task 2 should depend on tl-001")
+	task2 := tasks["a0000002"]
+	if len(task2.Deps) != 1 || task2.Deps[0] != "a0000001" {
+		t.Errorf("Task 2 should depend on a0000001")
 	}
 }
 
@@ -73,7 +69,7 @@ func TestGetReadyTasks(t *testing.T) {
 
 	events := []Event{
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now,
 			Type:      EventCreate,
 			Title:     "Task 1",
@@ -81,12 +77,12 @@ func TestGetReadyTasks(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(time.Second),
 			Type:      EventCreate,
 			Title:     "Task 2",
 			Status:    StatusOpen,
-			Deps:      []string{"tl-001"},
+			Deps:      []string{"a0000001"},
 		},
 	}
 
@@ -96,13 +92,13 @@ func TestGetReadyTasks(t *testing.T) {
 	if len(ready) != 1 {
 		t.Errorf("Expected 1 ready task, got %d", len(ready))
 	}
-	if ready[0].ID != "tl-001" {
-		t.Errorf("Ready task should be tl-001, got %s", ready[0].ID)
+	if ready[0].ID != "a0000001" {
+		t.Errorf("Ready task should be a0000001, got %s", ready[0].ID)
 	}
 
 	// Mark task 1 as done
 	events = append(events, Event{
-		ID:        "tl-001",
+		ID:        "a0000001",
 		Timestamp: now.Add(2 * time.Second),
 		Type:      EventStatus,
 		Status:    StatusDone,
@@ -114,8 +110,8 @@ func TestGetReadyTasks(t *testing.T) {
 	if len(ready) != 1 {
 		t.Errorf("Expected 1 ready task after completing dep, got %d", len(ready))
 	}
-	if ready[0].ID != "tl-002" {
-		t.Errorf("Ready task should be tl-002, got %s", ready[0].ID)
+	if ready[0].ID != "a0000002" {
+		t.Errorf("Ready task should be a0000002, got %s", ready[0].ID)
 	}
 }
 
@@ -141,7 +137,7 @@ func TestInitializeAndStorage(t *testing.T) {
 
 	// Test append and load events
 	event := Event{
-		ID:        "tl-test",
+		ID:        "a000test",
 		Timestamp: NowISO(),
 		Type:      EventCreate,
 		Title:     "Test task",
@@ -162,8 +158,8 @@ func TestInitializeAndStorage(t *testing.T) {
 	if len(events) != 1 {
 		t.Errorf("Expected 1 event, got %d", len(events))
 	}
-	if events[0].ID != "tl-test" {
-		t.Errorf("Event ID should be tl-test, got %s", events[0].ID)
+	if events[0].ID != "a000test" {
+		t.Errorf("Event ID should be a000test, got %s", events[0].ID)
 	}
 }
 
@@ -172,7 +168,7 @@ func TestDepEvents(t *testing.T) {
 
 	events := []Event{
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now,
 			Type:      EventCreate,
 			Title:     "Task 1",
@@ -180,7 +176,7 @@ func TestDepEvents(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(time.Second),
 			Type:      EventCreate,
 			Title:     "Task 2",
@@ -188,32 +184,32 @@ func TestDepEvents(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(2 * time.Second),
 			Type:      EventDep,
-			Dep:       "tl-001",
+			Dep:       "a0000001",
 			Action:    "add",
 		},
 	}
 
 	tasks := ComputeState(events)
-	task2 := tasks["tl-002"]
+	task2 := tasks["a0000002"]
 
-	if len(task2.Deps) != 1 || task2.Deps[0] != "tl-001" {
-		t.Errorf("Task 2 should have tl-001 as dependency")
+	if len(task2.Deps) != 1 || task2.Deps[0] != "a0000001" {
+		t.Errorf("Task 2 should have a0000001 as dependency")
 	}
 
 	// Remove dependency
 	events = append(events, Event{
-		ID:        "tl-002",
+		ID:        "a0000002",
 		Timestamp: now.Add(3 * time.Second),
 		Type:      EventDep,
-		Dep:       "tl-001",
+		Dep:       "a0000001",
 		Action:    "remove",
 	})
 
 	tasks = ComputeState(events)
-	task2 = tasks["tl-002"]
+	task2 = tasks["a0000002"]
 
 	if len(task2.Deps) != 0 {
 		t.Errorf("Task 2 should have no dependencies after removal")
@@ -225,7 +221,7 @@ func TestBuildDependencyGraph(t *testing.T) {
 
 	events := []Event{
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now,
 			Type:      EventCreate,
 			Title:     "Task 1",
@@ -233,12 +229,12 @@ func TestBuildDependencyGraph(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(time.Second),
 			Type:      EventCreate,
 			Title:     "Task 2",
 			Status:    StatusOpen,
-			Deps:      []string{"tl-001"},
+			Deps:      []string{"a0000001"},
 		},
 	}
 
@@ -258,10 +254,10 @@ func TestBuildDependencyGraph(t *testing.T) {
 func TestWouldCreateCycle(t *testing.T) {
 	now := time.Now().UTC()
 
-	// Create tasks: tl-001 <- tl-002 <- tl-003 (002 depends on 001, 003 depends on 002)
+	// Create tasks: a0000001 <- a0000002 <- a0000003 (002 depends on 001, 003 depends on 002)
 	events := []Event{
 		{
-			ID:        "tl-001",
+			ID:        "a0000001",
 			Timestamp: now,
 			Type:      EventCreate,
 			Title:     "Task 1",
@@ -269,47 +265,47 @@ func TestWouldCreateCycle(t *testing.T) {
 			Deps:      []string{},
 		},
 		{
-			ID:        "tl-002",
+			ID:        "a0000002",
 			Timestamp: now.Add(time.Second),
 			Type:      EventCreate,
 			Title:     "Task 2",
 			Status:    StatusOpen,
-			Deps:      []string{"tl-001"},
+			Deps:      []string{"a0000001"},
 		},
 		{
-			ID:        "tl-003",
+			ID:        "a0000003",
 			Timestamp: now.Add(2 * time.Second),
 			Type:      EventCreate,
 			Title:     "Task 3",
 			Status:    StatusOpen,
-			Deps:      []string{"tl-002"},
+			Deps:      []string{"a0000002"},
 		},
 	}
 
 	tasks := ComputeState(events)
 
 	// Self-dependency should be a cycle
-	if !WouldCreateCycle(tasks, "tl-001", "tl-001") {
+	if !WouldCreateCycle(tasks, "a0000001", "a0000001") {
 		t.Error("Self-dependency should be detected as a cycle")
 	}
 
-	// Direct cycle: tl-001 depending on tl-002 (which already depends on tl-001)
-	if !WouldCreateCycle(tasks, "tl-001", "tl-002") {
+	// Direct cycle: a0000001 depending on a0000002 (which already depends on a0000001)
+	if !WouldCreateCycle(tasks, "a0000001", "a0000002") {
 		t.Error("Direct cycle should be detected")
 	}
 
-	// Indirect cycle: tl-001 depending on tl-003 (which depends on tl-002, which depends on tl-001)
-	if !WouldCreateCycle(tasks, "tl-001", "tl-003") {
+	// Indirect cycle: a0000001 depending on a0000003 (which depends on a0000002, which depends on a0000001)
+	if !WouldCreateCycle(tasks, "a0000001", "a0000003") {
 		t.Error("Indirect cycle should be detected")
 	}
 
-	// Valid dependency: tl-003 depending on tl-001 (no cycle, just adds another dep)
-	if WouldCreateCycle(tasks, "tl-003", "tl-001") {
-		t.Error("Adding tl-001 as dep of tl-003 should not be a cycle")
+	// Valid dependency: a0000003 depending on a0000001 (no cycle, just adds another dep)
+	if WouldCreateCycle(tasks, "a0000003", "a0000001") {
+		t.Error("Adding a0000001 as dep of a0000003 should not be a cycle")
 	}
 
 	// Valid dependency: new task depending on existing
-	if WouldCreateCycle(tasks, "tl-002", "tl-001") {
-		t.Error("tl-002 already depends on tl-001, adding again is not a new cycle")
+	if WouldCreateCycle(tasks, "a0000002", "a0000001") {
+		t.Error("a0000002 already depends on a0000001, adding again is not a new cycle")
 	}
 }

@@ -48,3 +48,7 @@
 {"id":"tl-84c5a6cb","ts":"2026-01-16T23:43:32.764042Z","type":"status","status":"done","resolution":"completed","notes":"Inverted graph: roots are now top-level goals (tasks nothing depends on), children are dependencies/subtasks. Leaves match ready tasks."}
 {"id":"tl-4193f88a","ts":"2026-01-16T23:49:27.775751Z","type":"status","status":"in_progress"}
 {"id":"tl-4193f88a","ts":"2026-01-16T23:51:29.372366Z","type":"status","status":"done","resolution":"completed","notes":"Normalized --notes to --note in create and update commands. All commands now consistently use --note. Updated prime documentation."}
+{"id":"tl-84a972b1","ts":"2026-01-16T23:52:43.557266Z","type":"status","status":"in_progress"}
+{"id":"ffd192ab","ts":"2026-01-16T23:54:24.62254Z","type":"create","title":"Test new ID format","status":"open"}
+{"id":"ffd192ab","ts":"2026-01-16T23:55:58.105404Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-84a972b1","ts":"2026-01-16T23:56:27.570339Z","type":"status","status":"done","resolution":"completed","notes":"Removed tl- prefix from new task IDs. New IDs are 8-character hex strings."}

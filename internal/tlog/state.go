@@ -204,23 +204,15 @@ func isReachable(tasks map[string]*Task, startID, targetID string, visited map[s
 }
 
 // ResolveID resolves a prefix to a full task ID.
-// Accepts "tl-abc", "abc", or full ID. Returns error if no match or ambiguous.
+// Accepts full ID or prefix. Returns error if no match or ambiguous.
 func ResolveID(tasks map[string]*Task, prefix string) (string, error) {
-	// Normalize: strip "tl-" prefix if present
-	search := prefix
-	if len(prefix) > 3 && prefix[:3] == "tl-" {
-		search = prefix[3:]
-	}
-
 	var matches []string
 	for id := range tasks {
-		// Extract hex part (after "tl-")
-		hex := id[3:]
-		if hex == search || id == prefix {
+		if id == prefix {
 			// Exact match
 			return id, nil
 		}
-		if len(search) <= len(hex) && hex[:len(search)] == search {
+		if len(prefix) <= len(id) && id[:len(prefix)] == prefix {
 			matches = append(matches, id)
 		}
 	}

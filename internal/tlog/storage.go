@@ -56,7 +56,7 @@ func GenerateID() string {
 
 	data := fmt.Sprintf("%d%x", timestamp, randomBytes)
 	hash := sha256.Sum256([]byte(data))
-	return "tl-" + hex.EncodeToString(hash[:])[:8]
+	return hex.EncodeToString(hash[:])[:8]
 }
 
 // NowISO returns current time in ISO format
