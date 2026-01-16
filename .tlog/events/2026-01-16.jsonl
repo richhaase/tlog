@@ -6,3 +6,6 @@
 {"id":"tl-39bc92fb","ts":"2026-01-16T01:33:31.29762Z","type":"update","notes":"The way we implement this _may_ depend on how compaction is implemented"}
 {"id":"tl-f2770d8d","ts":"2026-01-16T01:37:36.12913Z","type":"status","status":"in_progress"}
 {"id":"tl-f2770d8d","ts":"2026-01-16T01:50:57.945335Z","type":"status","status":"done","resolution":"completed"}
+{"id":"tl-3b09a291","ts":"2026-01-16T01:52:45.379926Z","type":"create","title":"Convert justfile to Makefile and update documentation","status":"open","priority":1}
+{"id":"tl-3b09a291","ts":"2026-01-16T01:53:23.047961Z","type":"status","status":"in_progress"}
+{"id":"tl-3b09a291","ts":"2026-01-16T01:54:25.453466Z","type":"status","status":"done","resolution":"completed"}
