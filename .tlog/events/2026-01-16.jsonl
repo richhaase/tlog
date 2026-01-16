@@ -41,3 +41,8 @@
 {"id":"tl-08e47f5d","ts":"2026-01-16T23:21:53.314767Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-564fcf51","ts":"2026-01-16T23:21:53.385305Z","type":"status","status":"done","resolution":"wontfix"}
 {"id":"tl-5a6025a2","ts":"2026-01-16T23:21:53.457614Z","type":"status","status":"done","resolution":"wontfix"}
+{"id":"tl-4193f88a","ts":"2026-01-16T23:28:13.646574Z","type":"create","title":"Review and normalize command line flags, e.g. some commands use '--note' and other use '--notes'","status":"open","priority":3}
+{"id":"tl-84a972b1","ts":"2026-01-16T23:28:18.617897Z","type":"create","title":"remove 'tl-' prefix from tasks.  it provides no information and adds 3 characters repeatedly to output and log","status":"open","priority":1}
+{"id":"tl-84a972b1","ts":"2026-01-16T23:29:28.246827Z","type":"update","priority":3}
+{"id":"tl-84c5a6cb","ts":"2026-01-16T23:30:26.157032Z","type":"status","status":"in_progress"}
+{"id":"tl-84c5a6cb","ts":"2026-01-16T23:43:32.764042Z","type":"status","status":"done","resolution":"completed","notes":"Inverted graph: roots are now top-level goals (tasks nothing depends on), children are dependencies/subtasks. Leaves match ready tasks."}

@@ -457,8 +457,8 @@ func CmdGraph(root string) (string, error) {
 	return FormatDependencyTree(tasks), nil
 }
 
-// FormatDependencyTree renders tasks as a readable dependency tree
-// Shows tasks top-to-bottom in execution order: do top tasks first, then tasks below become unblocked
+// FormatDependencyTree renders tasks as a goal decomposition tree
+// Root = top-level goals (tasks nothing depends on), Leaves = ready tasks
 func FormatDependencyTree(tasks map[string]*Task) string {
 	var sb strings.Builder
 
@@ -474,25 +474,20 @@ func FormatDependencyTree(tasks map[string]*Task) string {
 		return "No active tasks"
 	}
 
-	// Build reverse dependency map: dependents[X] = tasks that depend on X
-	dependents := make(map[string][]*Task)
+	// Build set of tasks that have dependents (are depended on by others)
+	hasDependents := make(map[string]bool)
 	for _, t := range active {
 		for _, depID := range t.Deps {
-			dependents[depID] = append(dependents[depID], t)
+			if _, ok := active[depID]; ok {
+				hasDependents[depID] = true
+			}
 		}
 	}
 
-	// Root tasks: active tasks with no active dependencies
+	// Root tasks: active tasks that no other active task depends on (top-level goals)
 	var roots []*Task
 	for _, t := range active {
-		hasActiveDep := false
-		for _, depID := range t.Deps {
-			if dep, ok := tasks[depID]; ok && dep.Status != StatusDone {
-				hasActiveDep = true
-				break
-			}
-		}
-		if !hasActiveDep {
+		if !hasDependents[t.ID] {
 			roots = append(roots, t)
 		}
 	}
@@ -508,20 +503,20 @@ func FormatDependencyTree(tasks map[string]*Task) string {
 		return roots[i].Created.Before(roots[j].Created)
 	})
 
-	// Render each root task with tasks that depend on it
+	// Render each root task with its dependencies (subtasks)
 	for i, task := range roots {
 		if i > 0 {
 			sb.WriteString("\n")
 		}
 		seen := make(map[string]bool)
-		renderTaskTree(&sb, task, dependents, "", "", seen)
+		renderTaskTree(&sb, task, active, "", "", seen)
 	}
 
 	return sb.String()
 }
 
-// renderTaskTree recursively renders a task and tasks that depend on it
-func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Task, prefix string, connector string, seen map[string]bool) {
+// renderTaskTree recursively renders a task and its dependencies (subtasks)
+func renderTaskTree(sb *strings.Builder, task *Task, active map[string]*Task, prefix string, connector string, seen map[string]bool) {
 	// Cycle detection
 	if seen[task.ID] {
 		return
@@ -542,8 +537,13 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 	// Render this task
 	fmt.Fprintf(sb, "%s%s%s %s  %s\n", prefix, connector, status, task.ID, task.Title)
 
-	// Get tasks that depend on this one
-	deps := dependents[task.ID]
+	// Get active dependencies (subtasks that need to be done first)
+	var deps []*Task
+	for _, depID := range task.Deps {
+		if dep, ok := active[depID]; ok {
+			deps = append(deps, dep)
+		}
+	}
 	if len(deps) == 0 {
 		return
 	}
@@ -573,7 +573,7 @@ func renderTaskTree(sb *strings.Builder, task *Task, dependents map[string][]*Ta
 		if isLast {
 			childConnector = "└─ "
 		}
-		renderTaskTree(sb, dep, dependents, childPrefix, childConnector, seen)
+		renderTaskTree(sb, dep, active, childPrefix, childConnector, seen)
 	}
 }
 
