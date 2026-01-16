@@ -32,6 +32,20 @@ func CmdCreate(root, title string, deps, labels []string, description, notes str
 		labels = []string{}
 	}
 
+	// Validate that all dependencies exist
+	if len(deps) > 0 {
+		events, err := LoadAllEvents(root)
+		if err != nil {
+			return nil, err
+		}
+		tasks := ComputeState(events)
+		for _, depID := range deps {
+			if _, ok := tasks[depID]; !ok {
+				return nil, fmt.Errorf("dependency task not found: %s", depID)
+			}
+		}
+	}
+
 	event := Event{
 		ID:          id,
 		Timestamp:   now,
@@ -377,6 +391,13 @@ func CmdDep(root, id, depID, action string) (map[string]interface{}, error) {
 	}
 	if _, ok := tasks[depID]; !ok {
 		return nil, fmt.Errorf("dependency task not found: %s", depID)
+	}
+
+	// Check for circular dependency when adding
+	if action == "add" {
+		if WouldCreateCycle(tasks, id, depID) {
+			return nil, fmt.Errorf("circular dependency: adding %s as dependency of %s would create a cycle", depID, id)
+		}
 	}
 
 	now := NowISO()

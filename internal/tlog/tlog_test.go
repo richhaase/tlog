@@ -254,3 +254,62 @@ func TestBuildDependencyGraph(t *testing.T) {
 		t.Errorf("Expected 1 edge, got %d", len(graph.Edges))
 	}
 }
+
+func TestWouldCreateCycle(t *testing.T) {
+	now := time.Now().UTC()
+
+	// Create tasks: tl-001 <- tl-002 <- tl-003 (002 depends on 001, 003 depends on 002)
+	events := []Event{
+		{
+			ID:        "tl-001",
+			Timestamp: now,
+			Type:      EventCreate,
+			Title:     "Task 1",
+			Status:    StatusOpen,
+			Deps:      []string{},
+		},
+		{
+			ID:        "tl-002",
+			Timestamp: now.Add(time.Second),
+			Type:      EventCreate,
+			Title:     "Task 2",
+			Status:    StatusOpen,
+			Deps:      []string{"tl-001"},
+		},
+		{
+			ID:        "tl-003",
+			Timestamp: now.Add(2 * time.Second),
+			Type:      EventCreate,
+			Title:     "Task 3",
+			Status:    StatusOpen,
+			Deps:      []string{"tl-002"},
+		},
+	}
+
+	tasks := ComputeState(events)
+
+	// Self-dependency should be a cycle
+	if !WouldCreateCycle(tasks, "tl-001", "tl-001") {
+		t.Error("Self-dependency should be detected as a cycle")
+	}
+
+	// Direct cycle: tl-001 depending on tl-002 (which already depends on tl-001)
+	if !WouldCreateCycle(tasks, "tl-001", "tl-002") {
+		t.Error("Direct cycle should be detected")
+	}
+
+	// Indirect cycle: tl-001 depending on tl-003 (which depends on tl-002, which depends on tl-001)
+	if !WouldCreateCycle(tasks, "tl-001", "tl-003") {
+		t.Error("Indirect cycle should be detected")
+	}
+
+	// Valid dependency: tl-003 depending on tl-001 (no cycle, just adds another dep)
+	if WouldCreateCycle(tasks, "tl-003", "tl-001") {
+		t.Error("Adding tl-001 as dep of tl-003 should not be a cycle")
+	}
+
+	// Valid dependency: new task depending on existing
+	if WouldCreateCycle(tasks, "tl-002", "tl-001") {
+		t.Error("tl-002 already depends on tl-001, adding again is not a new cycle")
+	}
+}

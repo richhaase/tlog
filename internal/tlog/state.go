@@ -164,6 +164,45 @@ func removeItem(slice []string, item string) []string {
 	return result
 }
 
+// WouldCreateCycle checks if adding depID as a dependency of taskID would create a cycle.
+// Returns true if adding the dependency would create a circular dependency.
+func WouldCreateCycle(tasks map[string]*Task, taskID, depID string) bool {
+	// Self-dependency is a cycle
+	if taskID == depID {
+		return true
+	}
+
+	// Check if taskID is reachable from depID (i.e., depID already depends on taskID)
+	// If so, adding depID as a dependency of taskID would create a cycle
+	visited := make(map[string]bool)
+	return isReachable(tasks, depID, taskID, visited)
+}
+
+// isReachable checks if targetID is reachable from startID via dependencies
+func isReachable(tasks map[string]*Task, startID, targetID string, visited map[string]bool) bool {
+	if startID == targetID {
+		return true
+	}
+
+	if visited[startID] {
+		return false
+	}
+	visited[startID] = true
+
+	task, ok := tasks[startID]
+	if !ok {
+		return false
+	}
+
+	for _, depID := range task.Deps {
+		if isReachable(tasks, depID, targetID, visited) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ResolveID resolves a prefix to a full task ID.
 // Accepts "tl-abc", "abc", or full ID. Returns error if no match or ambiguous.
 func ResolveID(tasks map[string]*Task, prefix string) (string, error) {
