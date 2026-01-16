@@ -1,0 +1,1 @@
+{"id":"tl-7df93516","ts":"2026-01-16T00:06:17.611036Z","type":"status","status":"done","resolution":"completed","notes":"Implemented: 1) backlog tasks excluded from ready, 2) tlog backlog command, 3) --priority flag on list"}
