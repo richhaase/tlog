@@ -1,1 +1,8 @@
 {"id":"tl-7df93516","ts":"2026-01-16T00:06:17.611036Z","type":"status","status":"done","resolution":"completed","notes":"Implemented: 1) backlog tasks excluded from ready, 2) tlog backlog command, 3) --priority flag on list"}
+{"id":"tl-f2770d8d","ts":"2026-01-16T01:17:53.932347Z","type":"create","title":"Implement checks to block circular dependencies","status":"open","priority":1}
+{"id":"tl-f70e3d0c","ts":"2026-01-16T01:30:51.282436Z","type":"create","title":"Research how to implement tlog compact command to perform log compaction","status":"open"}
+{"id":"tl-39bc92fb","ts":"2026-01-16T01:31:12.886842Z","type":"create","title":"Research how to implement tlog compact command to perform log pruning","status":"open"}
+{"id":"tl-39bc92fb","ts":"2026-01-16T01:31:49.359238Z","type":"dep","dep":"tl-f70e3d0c","action":"add"}
+{"id":"tl-39bc92fb","ts":"2026-01-16T01:33:31.29762Z","type":"update","notes":"The way we implement this _may_ depend on how compaction is implemented"}
+{"id":"tl-f2770d8d","ts":"2026-01-16T01:37:36.12913Z","type":"status","status":"in_progress"}
+{"id":"tl-f2770d8d","ts":"2026-01-16T01:50:57.945335Z","type":"status","status":"done","resolution":"completed"}
