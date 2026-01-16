@@ -47,6 +47,16 @@ Add to your `CLAUDE.md` or `AGENTS.md`:
 This project uses tlog for task tracking. Run `tlog prime` to get started.
 ```
 
+## Development
+
+```bash
+make help           # show available targets
+make build          # build to bin/tlog
+make install        # install to GOBIN
+make test           # run tests
+make check          # run all quality checks
+```
+
 ## Inspiration
 
 [steveyegge/beads](https://github.com/steveyegge/beads)
