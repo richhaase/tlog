@@ -2,7 +2,7 @@
 
 Task tracking for AI coding agents. Helps humans and agents collaborate on work.
 
-> **Warning:** This is an experiment. tlog is a drastically simplified step cousin to [steveyegge/beads](https://github.com/steveyegge/beads), testing the thesis that beads does too much. tlog intentionally does less to enable more flexibility in workflows. If you want battle-tested, use beads.
+> **Warning:** This is an experiment. tlog is a drastically simplified step cousin to [steveyegge/beads](https://github.com/steveyegge/beads), testing the thesis that beads does too much for one tool. tlog intentionally does less to enable more flexibility in workflows. If you want battle-tested, use beads.
 
 ## What it does
 
