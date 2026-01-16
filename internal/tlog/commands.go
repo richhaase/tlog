@@ -605,7 +605,7 @@ Commands:
 
 Tips:
   --description  sets what the task is (mutable, overwrites)
-  --notes        logs what happened (append-only)
+  --note         logs what happened (append-only)
 `)
 
 	if len(ready) > 0 {

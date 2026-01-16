@@ -56,7 +56,7 @@ func init() {
 			deps, _ := cmd.Flags().GetStringSlice("dep")
 			labels, _ := cmd.Flags().GetStringSlice("label")
 			description, _ := cmd.Flags().GetString("description")
-			notes, _ := cmd.Flags().GetString("notes")
+			notes, _ := cmd.Flags().GetString("note")
 			priorityStr, _ := cmd.Flags().GetString("priority")
 			forParent, _ := cmd.Flags().GetString("for")
 
@@ -86,7 +86,7 @@ func init() {
 	createCmd.Flags().StringSlice("dep", nil, "Add dependency (repeatable)")
 	createCmd.Flags().StringSlice("label", nil, "Add label (repeatable)")
 	createCmd.Flags().String("description", "", "Set description (what this task is)")
-	createCmd.Flags().String("notes", "", "Add notes (what happened)")
+	createCmd.Flags().String("note", "", "Add note (what happened)")
 	createCmd.Flags().String("priority", "", "Set priority (critical|high|medium|low|backlog)")
 	createCmd.Flags().String("for", "", "Add as subtask of parent task (parent will depend on this task)")
 	rootCmd.AddCommand(createCmd)
@@ -202,7 +202,7 @@ func init() {
 
 			title, _ := cmd.Flags().GetString("title")
 			description, _ := cmd.Flags().GetString("description")
-			notes, _ := cmd.Flags().GetString("notes")
+			notes, _ := cmd.Flags().GetString("note")
 			labels, _ := cmd.Flags().GetStringSlice("label")
 			priorityStr, _ := cmd.Flags().GetString("priority")
 
@@ -221,7 +221,7 @@ func init() {
 	}
 	updateCmd.Flags().String("title", "", "New title")
 	updateCmd.Flags().String("description", "", "Set description (overwrites)")
-	updateCmd.Flags().String("notes", "", "Append notes")
+	updateCmd.Flags().String("note", "", "Append note")
 	updateCmd.Flags().StringSlice("label", nil, "Set labels (repeatable)")
 	updateCmd.Flags().String("priority", "", "Set priority (critical|high|medium|low|backlog)")
 	rootCmd.AddCommand(updateCmd)
