@@ -58,6 +58,7 @@ func init() {
 			description, _ := cmd.Flags().GetString("description")
 			notes, _ := cmd.Flags().GetString("notes")
 			priorityStr, _ := cmd.Flags().GetString("priority")
+			forParent, _ := cmd.Flags().GetString("for")
 
 			var priority *tlog.Priority
 			if priorityStr != "" {
@@ -69,7 +70,13 @@ func init() {
 			if err != nil {
 				exitError(err.Error())
 			}
-			result, err := tlog.CmdCreate(root, title, deps, labels, description, notes, priority)
+
+			// Resolve forParent ID if provided
+			if forParent != "" {
+				forParent = resolveID(root, forParent)
+			}
+
+			result, err := tlog.CmdCreate(root, title, deps, labels, description, notes, priority, forParent)
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -81,6 +88,7 @@ func init() {
 	createCmd.Flags().String("description", "", "Set description (what this task is)")
 	createCmd.Flags().String("notes", "", "Add notes (what happened)")
 	createCmd.Flags().String("priority", "", "Set priority (critical|high|medium|low|backlog)")
+	createCmd.Flags().String("for", "", "Add as subtask of parent task (parent will depend on this task)")
 	rootCmd.AddCommand(createCmd)
 
 	// Done command

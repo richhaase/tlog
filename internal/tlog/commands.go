@@ -21,7 +21,7 @@ func CmdInit(path string) (map[string]interface{}, error) {
 }
 
 // CmdCreate creates a new task
-func CmdCreate(root, title string, deps, labels []string, description, notes string, priority *Priority) (map[string]interface{}, error) {
+func CmdCreate(root, title string, deps, labels []string, description, notes string, priority *Priority, forParent string) (map[string]interface{}, error) {
 	id := GenerateID()
 	now := NowISO()
 
@@ -32,16 +32,26 @@ func CmdCreate(root, title string, deps, labels []string, description, notes str
 		labels = []string{}
 	}
 
-	// Validate that all dependencies exist
-	if len(deps) > 0 {
+	// Load events and compute state if we need to validate deps or forParent
+	var tasks map[string]*Task
+	if len(deps) > 0 || forParent != "" {
 		events, err := LoadAllEvents(root)
 		if err != nil {
 			return nil, err
 		}
-		tasks := ComputeState(events)
+		tasks = ComputeState(events)
+
+		// Validate that all dependencies exist
 		for _, depID := range deps {
 			if _, ok := tasks[depID]; !ok {
 				return nil, fmt.Errorf("dependency task not found: %s", depID)
+			}
+		}
+
+		// Validate that forParent exists
+		if forParent != "" {
+			if _, ok := tasks[forParent]; !ok {
+				return nil, fmt.Errorf("parent task not found: %s", forParent)
 			}
 		}
 	}
@@ -63,12 +73,27 @@ func CmdCreate(root, title string, deps, labels []string, description, notes str
 		return nil, err
 	}
 
+	// If forParent is specified, add this task as a dependency of the parent
+	if forParent != "" {
+		depEvent := Event{
+			ID:        forParent,
+			Timestamp: NowISO(),
+			Type:      EventDep,
+			Dep:       id,
+			Action:    "add",
+		}
+		if err := AppendEvent(root, depEvent); err != nil {
+			return nil, err
+		}
+	}
+
 	return map[string]interface{}{
-		"id":      id,
-		"title":   title,
-		"status":  StatusOpen,
-		"deps":    deps,
-		"created": now,
+		"id":        id,
+		"title":     title,
+		"status":    StatusOpen,
+		"deps":      deps,
+		"created":   now,
+		"forParent": forParent,
 	}, nil
 }
 
