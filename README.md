@@ -20,7 +20,23 @@ go install github.com/richhaase/tlog/cmd/tlog@latest
 ## Usage
 
 ```bash
-tlog help
+tlog init                    # initialize in current directory
+tlog create "task title"     # create a task
+tlog ready                   # list tasks ready to work on
+tlog claim <id>              # claim a task (mark in_progress)
+tlog done <id>               # mark task complete
+tlog unclaim <id>            # release task back to open
+
+tlog list                    # list open tasks
+tlog list --status all       # list all tasks
+tlog list --priority high    # filter by priority
+tlog backlog                 # list backlog tasks
+tlog graph                   # show dependency tree
+tlog show <id>               # show task details
+
+tlog dep <id> <dep-id>       # add dependency
+tlog update <id> --title "x" # update task
+tlog sync                    # commit .tlog to git
 ```
 
 ## For agents
