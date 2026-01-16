@@ -88,8 +88,8 @@ type Event struct {
 	Status      TaskStatus `json:"status,omitempty"`
 	Resolution  Resolution `json:"resolution,omitempty"`
 	Priority    *Priority  `json:"priority,omitempty"` // Pointer to distinguish unset from zero
-	Deps   []string `json:"deps,omitempty"`
-	Labels []string `json:"labels,omitempty"`
+	Deps        []string   `json:"deps,omitempty"`
+	Labels      []string   `json:"labels,omitempty"`
 	Description string     `json:"description,omitempty"` // Mutable: what is this task
 	Notes       string     `json:"notes,omitempty"`       // Append-only: what happened
 	// For dep events
