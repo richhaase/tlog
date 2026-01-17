@@ -1,0 +1,2 @@
+{"id":"tl-39bc92fb","ts":"2026-01-17T00:44:01.109719Z","type":"status","status":"done","resolution":"wontfix","notes":"Accidentally added task"}
+{"id":"975f0525","ts":"2026-01-17T00:44:56.87059Z","type":"create","title":"Add tlog delete command to add a tombstone record for tasks.  On compactions these records will be deleted, and before compaction records that are deleted will not be shown in any tlog output","status":"open"}
