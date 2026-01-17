@@ -34,3 +34,4 @@
 {"id":"e54c3c45","ts":"2026-01-17T22:29:52.248258Z","type":"create","title":"Test locking","status":"open"}
 {"id":"e54c3c45","ts":"2026-01-17T22:30:23.468676Z","type":"delete"}
 {"id":"e41b6109","ts":"2026-01-17T22:30:51.011754Z","type":"status","status":"done","resolution":"completed"}
+{"id":"41740544","ts":"2026-01-17T23:06:07.249549Z","type":"create","title":"tlog init should add .tlog/tlog.lock to .git/info/exclude","status":"open"}
