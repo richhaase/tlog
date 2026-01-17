@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/gofrs/flock"
 )
 
 const (
@@ -75,6 +77,14 @@ func AppendEvent(root string, event Event) error {
 	if err := os.MkdirAll(eventsPath, 0755); err != nil {
 		return err
 	}
+
+	// Acquire lock to prevent concurrent write corruption
+	lockPath := filepath.Join(root, "tlog.lock")
+	fileLock := flock.New(lockPath)
+	if err := fileLock.Lock(); err != nil {
+		return fmt.Errorf("acquiring lock: %w", err)
+	}
+	defer func() { _ = fileLock.Unlock() }()
 
 	filename := filepath.Join(eventsPath, TodayStr()+".jsonl")
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
