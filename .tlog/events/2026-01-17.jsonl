@@ -11,3 +11,4 @@
 {"id":"7139545f","ts":"2026-01-17T01:18:12.800134Z","type":"create","title":"Test task for deletion","status":"open"}
 {"id":"7139545f","ts":"2026-01-17T01:20:02.238775Z","type":"delete","notes":"Testing delete command"}
 {"id":"975f0525","ts":"2026-01-17T01:21:40.000592Z","type":"status","status":"done","resolution":"completed","notes":"Implemented delete command: added EventDelete type, Deleted field on Task, ComputeState handling, filtered deleted tasks from all output (list/ready/show/graph/labels/ResolveID), added CmdDelete and deleteCmd"}
+{"id":"94fb6431","ts":"2026-01-17T01:45:52.242498Z","type":"status","status":"done","resolution":"completed","notes":"Implemented compact command: writes to compacted.jsonl, removes old dated files, preserves today's file, honors tombstones"}
