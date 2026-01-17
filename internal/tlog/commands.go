@@ -696,9 +696,10 @@ func CmdPrime(root string, cliReference string) (string, error) {
 
 	sb.WriteString(`Workflow:
 1. claim a task before starting (prevents duplicate work)
-2. commit changes before marking done
-3. done when finished
-4. unclaim if you hit a blocker and need to release it
+2. decompose large tasks into smaller tasks with dependencies before starting
+3. commit changes before marking done
+4. done when finished
+5. unclaim if you hit a blocker and need to release it
 
 `)
 
