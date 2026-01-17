@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+	"time"
 )
 
 // CmdInit initializes a new tlog repository
@@ -835,8 +836,11 @@ func CmdSync(root, message string) (map[string]interface{}, error) {
 	}, nil
 }
 
-// CmdCompact compacts old event files into single-line task snapshots
-func CmdCompact(root string, dryRun bool) (map[string]interface{}, error) {
+// CmdPrune compacts old event files and optionally removes done tasks.
+// It combines compaction and pruning into a single pass for efficiency.
+// - keepAll: if true, keep all tasks (equivalent to old compact behavior)
+// - saveDays: if > 0 and not keepAll, preserve done tasks from the last N days
+func CmdPrune(root string, saveDays int, keepAll bool, dryRun bool) (map[string]interface{}, error) {
 	files, err := ListEventFiles(root)
 	if err != nil {
 		return nil, err
@@ -844,25 +848,27 @@ func CmdCompact(root string, dryRun bool) (map[string]interface{}, error) {
 
 	today := TodayStr() + ".jsonl"
 
-	// Find files to compact (all except today's)
-	var filesToCompact []string
+	// Find files to process (all except today's)
+	var filesToProcess []string
 	for _, f := range files {
 		if f != today {
-			filesToCompact = append(filesToCompact, f)
+			filesToProcess = append(filesToProcess, f)
 		}
 	}
 
-	if len(filesToCompact) == 0 {
+	if len(filesToProcess) == 0 {
 		return map[string]interface{}{
-			"status":       "nothing to compact",
+			"status":       "nothing to prune",
 			"files_before": len(files),
-			"files_after":  len(files),
+			"tasks_before": 0,
+			"tasks_after":  0,
+			"pruned":       0,
 		}, nil
 	}
 
-	// Load events from files to compact
+	// Load events from files to process
 	var events []Event
-	for _, f := range filesToCompact {
+	for _, f := range filesToProcess {
 		fileEvents, err := LoadEventsFromFile(root, f)
 		if err != nil {
 			return nil, fmt.Errorf("loading %s: %w", f, err)
@@ -878,13 +884,37 @@ func CmdCompact(root string, dryRun bool) (map[string]interface{}, error) {
 	// Compute state from these events
 	tasks := ComputeState(events)
 
-	// Generate snapshot create events for non-deleted tasks
-	// Use task's Created timestamp to preserve chronological ordering with today's events
+	// Calculate cutoff for save-days
+	cutoff := time.Time{}
+	if saveDays > 0 && !keepAll {
+		cutoff = time.Now().UTC().AddDate(0, 0, -saveDays)
+	}
+
+	// Generate snapshot events, filtering as needed
 	var snapshotEvents []Event
+	var prunedCount int
 	for _, task := range tasks {
 		if task.Deleted {
 			continue
 		}
+
+		// Decide whether to keep this task
+		shouldPrune := false
+		if !keepAll && task.Status == StatusDone {
+			if saveDays > 0 {
+				// Prune if older than cutoff
+				shouldPrune = task.Updated.Before(cutoff)
+			} else {
+				// Prune all done tasks
+				shouldPrune = true
+			}
+		}
+
+		if shouldPrune {
+			prunedCount++
+			continue
+		}
+
 		priority := task.Priority
 		snapshotEvents = append(snapshotEvents, Event{
 			ID:          task.ID,
@@ -901,35 +931,51 @@ func CmdCompact(root string, dryRun bool) (map[string]interface{}, error) {
 		})
 	}
 
+	tasksBefore := len(tasks)
+	tasksAfter := len(snapshotEvents)
+
 	if dryRun {
+		status := "dry run"
+		if keepAll {
+			status = "dry run (keep-all)"
+		}
 		return map[string]interface{}{
-			"status":          "dry run",
-			"files_to_remove": filesToCompact,
-			"events_before":   len(events),
-			"tasks_after":     len(snapshotEvents),
+			"status":          status,
+			"files_to_remove": filesToProcess,
+			"tasks_before":    tasksBefore,
+			"tasks_after":     tasksAfter,
+			"pruned":          prunedCount,
 		}, nil
 	}
 
-	// Write compacted file
+	// Write compacted file (only if there are tasks to write)
 	compactedFilename := "compacted.jsonl"
-	if err := WriteEventsToFile(root, compactedFilename, snapshotEvents); err != nil {
-		return nil, fmt.Errorf("writing compacted file: %w", err)
+	if len(snapshotEvents) > 0 {
+		if err := WriteEventsToFile(root, compactedFilename, snapshotEvents); err != nil {
+			return nil, fmt.Errorf("writing compacted file: %w", err)
+		}
+	} else {
+		// Remove compacted file if no tasks remain
+		_ = DeleteEventFile(root, compactedFilename)
 	}
 
 	// Delete old files
-	var deletedFiles []string
-	for _, f := range filesToCompact {
+	for _, f := range filesToProcess {
 		if err := DeleteEventFile(root, f); err != nil {
 			return nil, fmt.Errorf("deleting %s: %w", f, err)
 		}
-		deletedFiles = append(deletedFiles, f)
+	}
+
+	status := "pruned"
+	if keepAll {
+		status = "compacted"
 	}
 
 	return map[string]interface{}{
-		"status":        "compacted",
-		"compacted_to":  compactedFilename,
-		"files_removed": deletedFiles,
-		"events_before": len(events),
-		"tasks_after":   len(snapshotEvents),
+		"status":        status,
+		"files_removed": len(filesToProcess),
+		"tasks_before":  tasksBefore,
+		"tasks_after":   tasksAfter,
+		"pruned":        prunedCount,
 	}, nil
 }

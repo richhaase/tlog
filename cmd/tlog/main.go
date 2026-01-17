@@ -513,49 +513,56 @@ func init() {
 	rootCmd.AddCommand(syncCmd)
 
 	// Compact command
-	compactCmd := &cobra.Command{
-		Use:   "compact",
-		Short: "Compact old event files into snapshots",
-		Long:  "Reduces previous daily event files into single-line task snapshots. Deleted tasks are permanently removed. Today's file is preserved.",
+	pruneCmd := &cobra.Command{
+		Use:   "prune",
+		Short: "Compact files and remove done tasks",
+		Long:  "Compacts old event files and removes done tasks in a single pass. Use --save-days to preserve recently completed tasks, or --keep-all to skip pruning entirely (just compact).",
 		Run: func(cmd *cobra.Command, args []string) {
 			root, err := tlog.RequireTlog()
 			if err != nil {
 				exitError(err.Error())
 			}
+			saveDays, _ := cmd.Flags().GetInt("save-days")
+			keepAll, _ := cmd.Flags().GetBool("keep-all")
 			dryRun, _ := cmd.Flags().GetBool("dry-run")
 
-			result, err := tlog.CmdCompact(root, dryRun)
+			result, err := tlog.CmdPrune(root, saveDays, keepAll, dryRun)
 			if err != nil {
 				exitError(err.Error())
 			}
 
 			status := result["status"].(string)
-			if status == "nothing to compact" {
-				fmt.Println("Nothing to compact (only today's file exists)")
+			if status == "nothing to prune" {
+				fmt.Println("Nothing to prune (only today's file exists)")
 				return
 			}
 
-			if status == "dry run" {
-				files := result["files_to_remove"].([]string)
-				fmt.Printf("Dry run: would compact %d files (%d events -> %d tasks)\n",
-					len(files), result["events_before"], result["tasks_after"])
-				fmt.Println("Files to compact:")
-				for _, f := range files {
-					fmt.Printf("  %s\n", f)
+			tasksBefore := result["tasks_before"].(int)
+			tasksAfter := result["tasks_after"].(int)
+			pruned := result["pruned"].(int)
+
+			if strings.HasPrefix(status, "dry run") {
+				if keepAll {
+					fmt.Printf("Dry run: would compact %d tasks (no pruning)\n", tasksBefore)
+				} else {
+					fmt.Printf("Dry run: would prune %d done tasks (%d -> %d tasks)\n",
+						pruned, tasksBefore, tasksAfter)
 				}
 				return
 			}
 
-			fmt.Printf("Compacted: %d events -> %d tasks\n",
-				result["events_before"], result["tasks_after"])
-			fmt.Printf("Written to: %s\n", result["compacted_to"])
-			if removed, ok := result["files_removed"].([]string); ok && len(removed) > 0 {
-				fmt.Printf("Removed: %d files\n", len(removed))
+			if status == "compacted" {
+				fmt.Printf("Compacted: %d tasks (no pruning)\n", tasksAfter)
+			} else {
+				fmt.Printf("Pruned: %d done tasks removed (%d -> %d tasks)\n",
+					pruned, tasksBefore, tasksAfter)
 			}
 		},
 	}
-	compactCmd.Flags().Bool("dry-run", false, "Show what would be compacted without making changes")
-	rootCmd.AddCommand(compactCmd)
+	pruneCmd.Flags().Int("save-days", 0, "Preserve done tasks from the last N days")
+	pruneCmd.Flags().Bool("keep-all", false, "Compact only, do not remove done tasks")
+	pruneCmd.Flags().Bool("dry-run", false, "Show what would be pruned without making changes")
+	rootCmd.AddCommand(pruneCmd)
 }
 
 func exitError(msg string) {
