@@ -620,50 +620,154 @@ func renderTaskTree(sb *strings.Builder, task *Task, active map[string]*Task, pr
 }
 
 // CmdPrime generates context for AI agents
-func CmdPrime(root string) (string, error) {
+func CmdPrime(root string, cliReference string) (string, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return "", err
 	}
 
 	tasks := ComputeState(events)
-	ready := GetReadyTasks(tasks)
+
+	// Categorize tasks
+	var ready, inProgress, blocked, recentDone []*Task
+	for _, t := range tasks {
+		if t.Deleted {
+			continue
+		}
+		switch t.Status {
+		case StatusInProgress:
+			inProgress = append(inProgress, t)
+		case StatusDone:
+			recentDone = append(recentDone, t)
+		case StatusOpen:
+			if t.Priority == PriorityBacklog {
+				continue // skip backlog
+			}
+			// Check if blocked on deps
+			isBlocked := false
+			for _, depID := range t.Deps {
+				if dep, ok := tasks[depID]; ok && dep.Status != StatusDone {
+					isBlocked = true
+					break
+				}
+			}
+			if isBlocked {
+				blocked = append(blocked, t)
+			} else {
+				ready = append(ready, t)
+			}
+		}
+	}
+
+	// Sort ready by priority then created
+	sortTasksByPriorityCreated(ready)
+	sortTasksByPriorityCreated(blocked)
+
+	// Sort recentDone by updated (most recent first), limit to 3
+	sort.Slice(recentDone, func(i, j int) bool {
+		return recentDone[i].Updated.After(recentDone[j].Updated)
+	})
+	if len(recentDone) > 3 {
+		recentDone = recentDone[:3]
+	}
+
+	// Count stats
+	var openCount, inProgressCount, doneCount int
+	for _, t := range tasks {
+		if t.Deleted {
+			continue
+		}
+		switch t.Status {
+		case StatusOpen:
+			openCount++
+		case StatusInProgress:
+			inProgressCount++
+		case StatusDone:
+			doneCount++
+		}
+	}
 
 	var sb strings.Builder
 
 	sb.WriteString("tlog tracks tasks for AI agents in this project.\n\n")
+
+	// Summary line
+	sb.WriteString(fmt.Sprintf("Status: %d open, %d in-progress, %d done\n\n", openCount, inProgressCount, doneCount))
 
 	sb.WriteString(`Workflow:
 1. claim a task before starting (prevents duplicate work)
 2. done when finished
 3. unclaim if you hit a blocker and need to release it
 
-Commands:
-  tlog ready           list tasks ready to work on
-  tlog claim <id>      claim a task and start working
-  tlog done <id>       mark task complete
-  tlog unclaim <id>    release task if blocked
-  tlog create "title"  create a new task
-
-Tips:
-  --description  sets what the task is (mutable, overwrites)
-  --note         logs what happened (append-only)
 `)
 
-	if len(ready) > 0 {
-		sb.WriteString("\nReady tasks:\n")
-		for _, t := range ready {
-			labels := ""
-			if len(t.Labels) > 0 {
-				labels = " [" + strings.Join(t.Labels, ", ") + "]"
-			}
-			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, t.Title, labels))
+	// CLI reference (auto-generated)
+	if cliReference != "" {
+		sb.WriteString("Commands:\n")
+		sb.WriteString(cliReference)
+		sb.WriteString("\nTips:\n")
+		sb.WriteString("  --description  sets what the task is (mutable, overwrites)\n")
+		sb.WriteString("  --note         logs what happened (append-only)\n")
+	}
+
+	// In-progress tasks (important - shows what's being worked on)
+	if len(inProgress) > 0 {
+		sb.WriteString("\nIn-progress:\n")
+		for _, t := range inProgress {
+			sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
 		}
-	} else {
-		sb.WriteString("\nNo tasks ready. Use 'tlog create \"title\"' to create one.\n")
+	}
+
+	// Ready tasks
+	if len(ready) > 0 {
+		sb.WriteString("\nReady:\n")
+		for _, t := range ready {
+			priority := ""
+			if t.Priority != PriorityMedium {
+				priority = " !" + t.Priority.String()
+			}
+			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, t.Title, priority))
+		}
+	}
+
+	// Blocked tasks
+	if len(blocked) > 0 {
+		sb.WriteString("\nBlocked:\n")
+		for _, t := range blocked {
+			// Find what it's waiting on
+			var waitingOn []string
+			for _, depID := range t.Deps {
+				if dep, ok := tasks[depID]; ok && dep.Status != StatusDone {
+					waitingOn = append(waitingOn, depID[:8])
+				}
+			}
+			sb.WriteString(fmt.Sprintf("  %s  %s (waiting: %s)\n", t.ID, t.Title, strings.Join(waitingOn, ", ")))
+		}
+	}
+
+	// Recent completions (context)
+	if len(recentDone) > 0 {
+		sb.WriteString("\nRecent:\n")
+		for _, t := range recentDone {
+			sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
+		}
+	}
+
+	if len(ready) == 0 && len(inProgress) == 0 && len(blocked) == 0 {
+		sb.WriteString("\nNo tasks. Use 'tlog create \"title\"' to create one.\n")
 	}
 
 	return sb.String(), nil
+}
+
+// sortTasksByPriorityCreated sorts by priority (asc) then created (asc)
+func sortTasksByPriorityCreated(tasks []*Task) {
+	sort.Slice(tasks, func(i, j int) bool {
+		if tasks[i].Priority != tasks[j].Priority {
+			return tasks[i].Priority < tasks[j].Priority
+		}
+		return tasks[i].Created.Before(tasks[j].Created)
+	})
 }
 
 // CmdLabels shows labels in use and recommended conventions
