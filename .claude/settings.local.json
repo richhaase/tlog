@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tlog show:*)"
+      "Bash(tlog claim:*)",
+      "Bash(tlog list:*)",
+      "Bash(tlog ready:*)",
+      "Bash(tlog show:*)",
+      "Bash(make:*)"
     ]
   }
 }
