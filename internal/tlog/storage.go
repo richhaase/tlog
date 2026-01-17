@@ -156,3 +156,84 @@ func Initialize(path string) error {
 
 	return os.MkdirAll(filepath.Join(tlogPath, EventsDir), 0755)
 }
+
+// ListEventFiles returns sorted list of event file names (without path)
+func ListEventFiles(root string) ([]string, error) {
+	eventsPath := filepath.Join(root, EventsDir)
+
+	entries, err := os.ReadDir(eventsPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
+		return nil, err
+	}
+
+	var files []string
+	for _, entry := range entries {
+		if !entry.IsDir() && filepath.Ext(entry.Name()) == ".jsonl" {
+			files = append(files, entry.Name())
+		}
+	}
+	sort.Strings(files)
+	return files, nil
+}
+
+// LoadEventsFromFile loads events from a specific file
+func LoadEventsFromFile(root, filename string) ([]Event, error) {
+	filePath := filepath.Join(root, EventsDir, filename)
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+
+	var events []Event
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		var event Event
+		if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+// WriteEventsToFile writes events to a specific file (overwrites if exists)
+func WriteEventsToFile(root, filename string, events []Event) error {
+	eventsPath := filepath.Join(root, EventsDir)
+	if err := os.MkdirAll(eventsPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := filepath.Join(eventsPath, filename)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+
+	for _, event := range events {
+		data, err := json.Marshal(event)
+		if err != nil {
+			return err
+		}
+		if _, err := f.WriteString(string(data) + "\n"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteEventFile removes an event file
+func DeleteEventFile(root, filename string) error {
+	filePath := filepath.Join(root, EventsDir, filename)
+	return os.Remove(filePath)
+}

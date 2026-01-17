@@ -728,3 +728,102 @@ func CmdSync(root, message string) (map[string]interface{}, error) {
 		"message": message,
 	}, nil
 }
+
+// CmdCompact compacts old event files into single-line task snapshots
+func CmdCompact(root string, dryRun bool) (map[string]interface{}, error) {
+	files, err := ListEventFiles(root)
+	if err != nil {
+		return nil, err
+	}
+
+	today := TodayStr() + ".jsonl"
+
+	// Find files to compact (all except today's)
+	var filesToCompact []string
+	for _, f := range files {
+		if f != today {
+			filesToCompact = append(filesToCompact, f)
+		}
+	}
+
+	if len(filesToCompact) == 0 {
+		return map[string]interface{}{
+			"status":       "nothing to compact",
+			"files_before": len(files),
+			"files_after":  len(files),
+		}, nil
+	}
+
+	// Load events from files to compact
+	var events []Event
+	for _, f := range filesToCompact {
+		fileEvents, err := LoadEventsFromFile(root, f)
+		if err != nil {
+			return nil, fmt.Errorf("loading %s: %w", f, err)
+		}
+		events = append(events, fileEvents...)
+	}
+
+	// Sort events by timestamp for correct state computation
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Timestamp.Before(events[j].Timestamp)
+	})
+
+	// Compute state from these events
+	tasks := ComputeState(events)
+
+	// Generate snapshot create events for non-deleted tasks
+	// Use task's Created timestamp to preserve chronological ordering with today's events
+	var snapshotEvents []Event
+	for _, task := range tasks {
+		if task.Deleted {
+			continue
+		}
+		priority := task.Priority
+		snapshotEvents = append(snapshotEvents, Event{
+			ID:          task.ID,
+			Timestamp:   task.Created,
+			Type:        EventCreate,
+			Title:       task.Title,
+			Status:      task.Status,
+			Resolution:  task.Resolution,
+			Priority:    &priority,
+			Deps:        task.Deps,
+			Labels:      task.Labels,
+			Description: task.Description,
+			Notes:       task.Notes,
+		})
+	}
+
+	if dryRun {
+		return map[string]interface{}{
+			"status":          "dry run",
+			"files_to_remove": filesToCompact,
+			"events_before":   len(events),
+			"tasks_after":     len(snapshotEvents),
+		}, nil
+	}
+
+	// Write compacted file
+	compactedFilename := "compacted.jsonl"
+	if err := WriteEventsToFile(root, compactedFilename, snapshotEvents); err != nil {
+		return nil, fmt.Errorf("writing compacted file: %w", err)
+	}
+
+	// Delete old files
+	var deletedFiles []string
+	for _, f := range filesToCompact {
+		if err := DeleteEventFile(root, f); err != nil {
+			return nil, fmt.Errorf("deleting %s: %w", f, err)
+		}
+		deletedFiles = append(deletedFiles, f)
+	}
+
+	return map[string]interface{}{
+		"status":        "compacted",
+		"compacted_to":  compactedFilename,
+		"files_removed": deletedFiles,
+		"events_before": len(events),
+		"tasks_after":   len(snapshotEvents),
+	}, nil
+}

@@ -508,6 +508,51 @@ func init() {
 	}
 	syncCmd.Flags().StringP("message", "m", "", "Commit message")
 	rootCmd.AddCommand(syncCmd)
+
+	// Compact command
+	compactCmd := &cobra.Command{
+		Use:   "compact",
+		Short: "Compact old event files into snapshots",
+		Long:  "Reduces previous daily event files into single-line task snapshots. Deleted tasks are permanently removed. Today's file is preserved.",
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			dryRun, _ := cmd.Flags().GetBool("dry-run")
+
+			result, err := tlog.CmdCompact(root, dryRun)
+			if err != nil {
+				exitError(err.Error())
+			}
+
+			status := result["status"].(string)
+			if status == "nothing to compact" {
+				fmt.Println("Nothing to compact (only today's file exists)")
+				return
+			}
+
+			if status == "dry run" {
+				files := result["files_to_remove"].([]string)
+				fmt.Printf("Dry run: would compact %d files (%d events -> %d tasks)\n",
+					len(files), result["events_before"], result["tasks_after"])
+				fmt.Println("Files to compact:")
+				for _, f := range files {
+					fmt.Printf("  %s\n", f)
+				}
+				return
+			}
+
+			fmt.Printf("Compacted: %d events -> %d tasks\n",
+				result["events_before"], result["tasks_after"])
+			fmt.Printf("Written to: %s\n", result["compacted_to"])
+			if removed, ok := result["files_removed"].([]string); ok && len(removed) > 0 {
+				fmt.Printf("Removed: %d files\n", len(removed))
+			}
+		},
+	}
+	compactCmd.Flags().Bool("dry-run", false, "Show what would be compacted without making changes")
+	rootCmd.AddCommand(compactCmd)
 }
 
 func exitError(msg string) {
