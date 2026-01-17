@@ -30,3 +30,7 @@
 {"id":"7335fe3f","ts":"2026-01-17T21:24:41.202672Z","type":"status","status":"in_progress"}
 {"id":"7335fe3f","ts":"2026-01-17T21:30:05.57782Z","type":"update","notes":"Design decision: merge compact and prune into single prune command. prune does compaction + done task removal in one pass. Flags: --save-days N (keep recent done), --keep-all (just compact, no removal). Deprecate standalone compact command."}
 {"id":"7335fe3f","ts":"2026-01-17T21:35:46.765955Z","type":"status","status":"done","resolution":"completed"}
+{"id":"e41b6109","ts":"2026-01-17T22:28:10.782788Z","type":"status","status":"in_progress"}
+{"id":"e54c3c45","ts":"2026-01-17T22:29:52.248258Z","type":"create","title":"Test locking","status":"open"}
+{"id":"e54c3c45","ts":"2026-01-17T22:30:23.468676Z","type":"delete"}
+{"id":"e41b6109","ts":"2026-01-17T22:30:51.011754Z","type":"status","status":"done","resolution":"completed"}
