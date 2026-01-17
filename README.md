@@ -20,23 +20,38 @@ go install github.com/richhaase/tlog/cmd/tlog@latest
 ## Usage
 
 ```bash
+# Setup
 tlog init                    # initialize in current directory
+tlog prime                   # get AI agent context (start here)
+
+# Task lifecycle
 tlog create "task title"     # create a task
-tlog ready                   # list tasks ready to work on
 tlog claim <id>              # claim a task (mark in_progress)
 tlog done <id>               # mark task complete
 tlog unclaim <id>            # release task back to open
+tlog reopen <id>             # reopen a done/in_progress task
+tlog delete <id>             # soft-delete task (removed on compact)
 
+# Querying
+tlog ready                   # list tasks ready to work on
 tlog list                    # list open tasks
 tlog list --status all       # list all tasks
 tlog list --priority high    # filter by priority
 tlog backlog                 # list backlog tasks
-tlog graph                   # show dependency tree
 tlog show <id>               # show task details
+tlog graph                   # show dependency tree
 
-tlog dep <id> <dep-id>       # add dependency
-tlog update <id> --title "x" # update task
+# Task metadata
+tlog create "x" --for <parent>         # create subtask
+tlog create "x" --priority high        # set priority
+tlog update <id> --note "what happened"  # append note
+tlog dep <id> --needs <dep-id>         # add dependency
+tlog dep <id> --remove <dep-id>        # remove dependency
+
+# Maintenance
 tlog sync                    # commit .tlog to git
+tlog compact                 # compact old event files
+tlog labels                  # show labels in use
 ```
 
 ## For agents
