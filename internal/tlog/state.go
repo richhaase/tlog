@@ -13,10 +13,15 @@ func ComputeState(events []Event) map[string]*Task {
 			if event.Priority != nil {
 				priority = *event.Priority
 			}
+			status := StatusOpen
+			if event.Status != "" {
+				status = event.Status
+			}
 			tasks[event.ID] = &Task{
 				ID:          event.ID,
 				Title:       event.Title,
-				Status:      StatusOpen,
+				Status:      status,
+				Resolution:  event.Resolution,
 				Priority:    priority,
 				Deps:        event.Deps,
 				Created:     event.Timestamp,
