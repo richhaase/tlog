@@ -452,9 +452,10 @@ func init() {
 		Use:   "prime",
 		Short: "Get AI agent context",
 		Run: func(cmd *cobra.Command, args []string) {
-			root, err := tlog.RequireTlog()
+			root, err := tlog.GetTlogRoot()
 			if err != nil {
-				exitError(err.Error())
+				// Silently exit if tlog not initialized
+				return
 			}
 			cliRef := generateCLIReference()
 			result, err := tlog.CmdPrime(root, cliRef)
