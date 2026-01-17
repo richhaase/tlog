@@ -240,6 +240,40 @@ func CmdReopen(root, id string) (map[string]interface{}, error) {
 	}, nil
 }
 
+// CmdDelete marks a task as deleted (tombstone)
+func CmdDelete(root, id, notes string) (map[string]interface{}, error) {
+	events, err := LoadAllEvents(root)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := ComputeState(events)
+	task, ok := tasks[id]
+	if !ok {
+		return nil, fmt.Errorf("task not found: %s", id)
+	}
+	if task.Deleted {
+		return nil, fmt.Errorf("task already deleted: %s", id)
+	}
+
+	now := NowISO()
+	event := Event{
+		ID:        id,
+		Timestamp: now,
+		Type:      EventDelete,
+		Notes:     notes,
+	}
+
+	if err := AppendEvent(root, event); err != nil {
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"id":      id,
+		"deleted": now,
+	}, nil
+}
+
 // CmdUpdate updates a task's title, description, notes, or labels
 func CmdUpdate(root, id, title, description, notes string, labels []string, priority *Priority) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
@@ -285,6 +319,11 @@ func CmdList(root string, statusFilter string, labelFilter string, priorityFilte
 
 	var taskList []*Task
 	for _, task := range tasks {
+		// Exclude deleted tasks
+		if task.Deleted {
+			continue
+		}
+
 		// Check status filter
 		statusMatch := statusFilter == "all" ||
 			(statusFilter == "open" && task.Status == StatusOpen) ||
@@ -342,6 +381,9 @@ func CmdShow(root, id string) (map[string]interface{}, error) {
 	tasks := ComputeState(events)
 	task, ok := tasks[id]
 	if !ok {
+		return nil, fmt.Errorf("task not found: %s", id)
+	}
+	if task.Deleted {
 		return nil, fmt.Errorf("task not found: %s", id)
 	}
 
@@ -462,10 +504,10 @@ func CmdGraph(root string) (string, error) {
 func FormatDependencyTree(tasks map[string]*Task) string {
 	var sb strings.Builder
 
-	// Find non-done tasks
+	// Find non-done, non-deleted tasks
 	active := make(map[string]*Task)
 	for id, t := range tasks {
-		if t.Status != StatusDone {
+		if t.Status != StatusDone && !t.Deleted {
 			active[id] = t
 		}
 	}
@@ -633,9 +675,12 @@ func CmdLabels(root string) (map[string]interface{}, error) {
 
 	tasks := ComputeState(events)
 
-	// Collect unique labels
+	// Collect unique labels (excluding deleted tasks)
 	labelSet := make(map[string]bool)
 	for _, task := range tasks {
+		if task.Deleted {
+			continue
+		}
 		for _, label := range task.Labels {
 			labelSet[label] = true
 		}

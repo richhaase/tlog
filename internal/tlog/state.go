@@ -77,6 +77,15 @@ func ComputeState(events []Event) map[string]*Task {
 				}
 				task.Updated = event.Timestamp
 			}
+
+		case EventDelete:
+			if task, ok := tasks[event.ID]; ok {
+				task.Deleted = true
+				if event.Notes != "" {
+					task.Notes = appendNote(task.Notes, event.Notes)
+				}
+				task.Updated = event.Timestamp
+			}
 		}
 	}
 
@@ -87,6 +96,11 @@ func ComputeState(events []Event) map[string]*Task {
 func GetReadyTasks(tasks map[string]*Task) []*Task {
 	var ready []*Task
 	for _, task := range tasks {
+		// Exclude deleted tasks
+		if task.Deleted {
+			continue
+		}
+
 		if task.Status != StatusOpen {
 			continue
 		}
@@ -210,9 +224,13 @@ func isReachable(tasks map[string]*Task, startID, targetID string, visited map[s
 
 // ResolveID resolves a prefix to a full task ID.
 // Accepts full ID or prefix. Returns error if no match or ambiguous.
+// Deleted tasks are excluded from resolution.
 func ResolveID(tasks map[string]*Task, prefix string) (string, error) {
 	var matches []string
-	for id := range tasks {
+	for id, task := range tasks {
+		if task.Deleted {
+			continue
+		}
 		if id == prefix {
 			// Exact match
 			return id, nil

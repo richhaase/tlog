@@ -188,6 +188,29 @@ func init() {
 		},
 	})
 
+	// Delete command
+	deleteCmd := &cobra.Command{
+		Use:   "delete <id>",
+		Short: "Delete task (tombstone, removed on compaction)",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			root, err := tlog.RequireTlog()
+			if err != nil {
+				exitError(err.Error())
+			}
+			id := resolveID(root, args[0])
+			notes, _ := cmd.Flags().GetString("note")
+
+			result, err := tlog.CmdDelete(root, id, notes)
+			if err != nil {
+				exitError(err.Error())
+			}
+			fmt.Printf("Deleted: %s\n", result["id"])
+		},
+	}
+	deleteCmd.Flags().String("note", "", "Append note explaining deletion")
+	rootCmd.AddCommand(deleteCmd)
+
 	// Update command
 	updateCmd := &cobra.Command{
 		Use:   "update <id>",

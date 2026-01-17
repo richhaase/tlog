@@ -12,6 +12,7 @@ const (
 	EventStatus EventType = "status"
 	EventDep    EventType = "dep"
 	EventUpdate EventType = "update"
+	EventDelete EventType = "delete"
 )
 
 // TaskStatus represents the status of a task
@@ -110,6 +111,7 @@ type Task struct {
 	Labels      []string   `json:"labels"`
 	Description string     `json:"description,omitempty"` // Mutable: what is this task
 	Notes       string     `json:"notes,omitempty"`       // Append-only: what happened
+	Deleted     bool       `json:"deleted,omitempty"`     // Tombstone: task is deleted
 }
 
 // GraphNode represents a node in the dependency graph
