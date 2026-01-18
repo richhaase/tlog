@@ -93,6 +93,7 @@ type Event struct {
 	Labels      []string   `json:"labels,omitempty"`
 	Description string     `json:"description,omitempty"` // Mutable: what is this task
 	Notes       string     `json:"notes,omitempty"`       // Append-only: what happened
+	Commit      string     `json:"commit,omitempty"`      // For status events: commit SHA that completed the task
 	// For dep events
 	Dep    string `json:"dep,omitempty"`
 	Action string `json:"action,omitempty"` // "add" or "remove"
@@ -111,6 +112,7 @@ type Task struct {
 	Labels      []string   `json:"labels"`
 	Description string     `json:"description,omitempty"` // Mutable: what is this task
 	Notes       string     `json:"notes,omitempty"`       // Append-only: what happened
+	Commit      string     `json:"commit,omitempty"`      // Commit SHA that completed the task
 	Deleted     bool       `json:"deleted,omitempty"`     // Tombstone: task is deleted
 }
 

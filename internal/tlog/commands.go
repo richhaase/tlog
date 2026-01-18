@@ -99,7 +99,7 @@ func CmdCreate(root, title string, deps, labels []string, description, notes str
 }
 
 // CmdDone marks a task as done
-func CmdDone(root, id string, resolution Resolution, notes string) (map[string]interface{}, error) {
+func CmdDone(root, id string, resolution Resolution, notes, commit string) (map[string]interface{}, error) {
 	events, err := LoadAllEvents(root)
 	if err != nil {
 		return nil, err
@@ -122,6 +122,7 @@ func CmdDone(root, id string, resolution Resolution, notes string) (map[string]i
 		Status:     StatusDone,
 		Resolution: resolution,
 		Notes:      notes,
+		Commit:     commit,
 	}
 
 	if err := AppendEvent(root, event); err != nil {
@@ -699,7 +700,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 1. claim a task before starting (prevents duplicate work)
 2. decompose large tasks into smaller tasks with dependencies before starting
 3. commit changes before marking done
-4. done when finished
+4. done when finished (use --commit to record the commit SHA)
 5. unclaim if you hit a blocker and need to release it
 
 `)
@@ -752,7 +753,11 @@ func CmdPrime(root string, cliReference string) (string, error) {
 	if len(recentDone) > 0 {
 		sb.WriteString("\nRecent:\n")
 		for _, t := range recentDone {
-			sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
+			if t.Commit != "" {
+				sb.WriteString(fmt.Sprintf("  %s  %s (%s)\n", t.ID, t.Title, t.Commit))
+			} else {
+				sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
+			}
 		}
 	}
 

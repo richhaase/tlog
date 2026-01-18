@@ -111,8 +111,9 @@ func init() {
 				resolution = tlog.ResolutionDuplicate
 			}
 			notes, _ := cmd.Flags().GetString("note")
+			commit, _ := cmd.Flags().GetString("commit")
 
-			result, err := tlog.CmdDone(root, id, resolution, notes)
+			result, err := tlog.CmdDone(root, id, resolution, notes, commit)
 			if err != nil {
 				exitError(err.Error())
 			}
@@ -122,6 +123,7 @@ func init() {
 	doneCmd.Flags().Bool("wontfix", false, "Resolution: wontfix")
 	doneCmd.Flags().Bool("duplicate", false, "Resolution: duplicate")
 	doneCmd.Flags().String("note", "", "Append closing note")
+	doneCmd.Flags().String("commit", "", "Record commit SHA that completed this task")
 	rootCmd.AddCommand(doneCmd)
 
 	// Claim command
@@ -320,6 +322,9 @@ func init() {
 					fmt.Printf(" %s(%s)", d["id"], d["status"])
 				}
 				fmt.Println()
+			}
+			if task.Commit != "" {
+				fmt.Printf("Commit: %s\n", task.Commit)
 			}
 			if task.Notes != "" {
 				fmt.Printf("Notes: %s\n", task.Notes)

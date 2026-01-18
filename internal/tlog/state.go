@@ -44,6 +44,9 @@ func ComputeState(events []Event) map[string]*Task {
 				if event.Notes != "" {
 					task.Notes = appendNote(task.Notes, event.Notes)
 				}
+				if event.Commit != "" {
+					task.Commit = event.Commit
+				}
 				task.Updated = event.Timestamp
 			}
 
