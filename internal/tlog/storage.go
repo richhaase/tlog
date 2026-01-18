@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/gofrs/flock"
@@ -164,7 +165,60 @@ func Initialize(path string) error {
 		return fmt.Errorf("tlog already initialized")
 	}
 
-	return os.MkdirAll(filepath.Join(tlogPath, EventsDir), 0755)
+	if err := os.MkdirAll(filepath.Join(tlogPath, EventsDir), 0755); err != nil {
+		return err
+	}
+
+	// Best effort: add tlog.lock to .git/info/exclude if this is a git repo
+	_ = addToGitExclude(path, ".tlog/tlog.lock")
+
+	return nil
+}
+
+// addToGitExclude adds an entry to .git/info/exclude if the git repo exists.
+// Returns nil if successful or if .git doesn't exist (not an error).
+func addToGitExclude(path, entry string) error {
+	gitPath := filepath.Join(path, ".git")
+	if _, err := os.Stat(gitPath); os.IsNotExist(err) {
+		return nil // Not a git repo, nothing to do
+	}
+
+	infoPath := filepath.Join(gitPath, "info")
+	if err := os.MkdirAll(infoPath, 0755); err != nil {
+		return err
+	}
+
+	excludePath := filepath.Join(infoPath, "exclude")
+
+	// Read existing content to check if entry already exists
+	content, err := os.ReadFile(excludePath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	// Check if entry already exists
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) == entry {
+			return nil // Already excluded
+		}
+	}
+
+	// Append entry
+	f, err := os.OpenFile(excludePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+
+	// Add newline before entry if file doesn't end with one
+	prefix := ""
+	if len(content) > 0 && content[len(content)-1] != '\n' {
+		prefix = "\n"
+	}
+
+	_, err = f.WriteString(prefix + entry + "\n")
+	return err
 }
 
 // ListEventFiles returns sorted list of event file names (without path)
