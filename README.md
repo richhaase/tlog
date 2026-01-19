@@ -28,9 +28,10 @@ tlog prime                   # get AI agent context (start here)
 tlog create "task title"     # create a task
 tlog claim <id>              # claim a task (mark in_progress)
 tlog done <id>               # mark task complete
+tlog done <id> --commit abc  # mark done and record commit SHA
 tlog unclaim <id>            # release task back to open
 tlog reopen <id>             # reopen a done/in_progress task
-tlog delete <id>             # soft-delete task (removed on compact)
+tlog delete <id>             # soft-delete task (removed on prune)
 
 # Querying
 tlog ready                   # list tasks ready to work on
@@ -50,7 +51,8 @@ tlog dep <id> --remove <dep-id>        # remove dependency
 
 # Maintenance
 tlog sync                    # commit .tlog to git
-tlog compact                 # compact old event files
+tlog sync -m "message"       # commit with custom message
+tlog prune                   # compact files and remove done tasks
 tlog labels                  # show labels in use
 ```
 
