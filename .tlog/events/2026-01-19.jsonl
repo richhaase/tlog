@@ -18,3 +18,7 @@
 {"id":"bc129dff","ts":"2026-01-19T17:48:09.497878Z","type":"status","status":"done","resolution":"completed","commit":"pending"}
 {"id":"430a6ba7","ts":"2026-01-19T17:48:09.502758Z","type":"status","status":"in_progress"}
 {"id":"430a6ba7","ts":"2026-01-19T17:48:57.349653Z","type":"status","status":"done","resolution":"completed","commit":"118852e"}
+{"id":"8bfc7264","ts":"2026-01-19T18:10:03.350898Z","type":"create","title":"Add canonical labels with hints in prime output","status":"open","priority":1,"description":"Define canonical labels (spike, needs-breakdown, blocked-external, wip) with documented semantics in prime tips. Add advisory hints when tasks might benefit from labels they don't have (e.g., large tasks without subtasks lacking spike/needs-breakdown)."}
+{"id":"8bfc7264","ts":"2026-01-19T18:10:06.654639Z","type":"status","status":"in_progress"}
+{"id":"8bfc7264","ts":"2026-01-19T18:18:04.267207Z","type":"update","labels":["spike"]}
+{"id":"8bfc7264","ts":"2026-01-19T18:18:12.60164Z","type":"update"}

@@ -721,6 +721,11 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		sb.WriteString("  [medium]    normal priority (default, not shown)\n")
 		sb.WriteString("  [low]       nice to have, do when time permits\n")
 		sb.WriteString("  [backlog]   not actively prioritized (hidden from ready list)\n")
+		sb.WriteString("\nCanonical labels (how to approach):\n")
+		sb.WriteString("  spike             timeboxed research — outcome is knowledge/subtasks, not code\n")
+		sb.WriteString("  needs-breakdown   too large to work directly — decompose before claiming\n")
+		sb.WriteString("  blocked-external  waiting on something outside tlog's control\n")
+		sb.WriteString("  wip               partially complete — context exists, needs continuation\n")
 	}
 
 	// In-progress tasks (important - shows what's being worked on)
