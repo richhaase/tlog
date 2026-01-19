@@ -712,13 +712,19 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		sb.WriteString("\nTips:\n")
 		sb.WriteString("  --description  sets what the task is (mutable, overwrites)\n")
 		sb.WriteString("  --note         logs what happened (append-only)\n")
+		sb.WriteString("\nPriority levels (do highest available first):\n")
+		sb.WriteString("  [critical]  blocking others or time-sensitive\n")
+		sb.WriteString("  [high]      important, do soon\n")
+		sb.WriteString("  [medium]    normal priority (default, not shown)\n")
+		sb.WriteString("  [low]       nice to have, do when time permits\n")
+		sb.WriteString("  [backlog]   not actively prioritized (hidden from ready list)\n")
 	}
 
 	// In-progress tasks (important - shows what's being worked on)
 	if len(inProgress) > 0 {
 		sb.WriteString("\nIn-progress:\n")
 		for _, t := range inProgress {
-			sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
+			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, formatPriorityPrefix(t.Priority), t.Title))
 		}
 	}
 
@@ -726,11 +732,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 	if len(ready) > 0 {
 		sb.WriteString("\nReady:\n")
 		for _, t := range ready {
-			priority := ""
-			if t.Priority != PriorityMedium {
-				priority = " !" + t.Priority.String()
-			}
-			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, t.Title, priority))
+			sb.WriteString(fmt.Sprintf("  %s  %s%s\n", t.ID, formatPriorityPrefix(t.Priority), t.Title))
 		}
 	}
 
@@ -745,7 +747,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 					waitingOn = append(waitingOn, depID[:8])
 				}
 			}
-			sb.WriteString(fmt.Sprintf("  %s  %s (waiting: %s)\n", t.ID, t.Title, strings.Join(waitingOn, ", ")))
+			sb.WriteString(fmt.Sprintf("  %s  %s%s (waiting: %s)\n", t.ID, formatPriorityPrefix(t.Priority), t.Title, strings.Join(waitingOn, ", ")))
 		}
 	}
 
@@ -776,6 +778,15 @@ func sortTasksByPriorityCreated(tasks []*Task) {
 		}
 		return tasks[i].Created.Before(tasks[j].Created)
 	})
+}
+
+// formatPriorityPrefix returns a bracketed priority prefix for display.
+// Returns empty string for medium priority (the default) to reduce noise.
+func formatPriorityPrefix(p Priority) string {
+	if p == PriorityMedium {
+		return ""
+	}
+	return "[" + p.String() + "] "
 }
 
 // CmdLabels shows labels in use and recommended conventions
