@@ -12,3 +12,9 @@
 {"id":"f43d2c46","ts":"2026-01-19T17:40:57.738859Z","type":"create","title":"Add sync hint to tlog prime","status":"open","description":"Add a hint suggesting agents use 'tlog sync -m \u003cmessage\u003e' periodically to commit tlog state."}
 {"id":"f43d2c46","ts":"2026-01-19T17:40:57.748955Z","type":"status","status":"in_progress"}
 {"id":"f43d2c46","ts":"2026-01-19T17:41:41.112179Z","type":"status","status":"done","resolution":"completed","commit":"1ea428a"}
+{"id":"bc129dff","ts":"2026-01-19T17:46:46.123258Z","type":"create","title":"Add --for flag hint to prime tips","status":"open","description":"The --for flag creates a subtask with a dependency on the parent, enabling task decomposition. Add a tip to prime explaining this."}
+{"id":"430a6ba7","ts":"2026-01-19T17:46:55.525013Z","type":"create","title":"Verify partial ID matching and add hint to prime","status":"open","description":"Check if tlog supports partial ID matching (e.g., 'tlog done 652c' instead of full 8-char ID). If supported, add a hint to prime tips."}
+{"id":"bc129dff","ts":"2026-01-19T17:47:18.408141Z","type":"status","status":"in_progress"}
+{"id":"bc129dff","ts":"2026-01-19T17:48:09.497878Z","type":"status","status":"done","resolution":"completed","commit":"pending"}
+{"id":"430a6ba7","ts":"2026-01-19T17:48:09.502758Z","type":"status","status":"in_progress"}
+{"id":"430a6ba7","ts":"2026-01-19T17:48:57.349653Z","type":"status","status":"done","resolution":"completed","commit":"118852e"}
