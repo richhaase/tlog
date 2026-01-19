@@ -1,0 +1,11 @@
+{"id":"4d177ec9","ts":"2026-01-19T17:23:08.636162Z","type":"create","title":"Investigate and enhance tlog prime to make priority levels clearer to agents","status":"open","description":"Review the current tlog prime output and improve how priority levels are communicated to AI agents. Consider: clearer labels, visual indicators, or better ordering/grouping by priority."}
+{"id":"4d177ec9","ts":"2026-01-19T17:23:34.346141Z","type":"status","status":"in_progress"}
+{"id":"1b4aa0bd","ts":"2026-01-19T17:24:17.5333Z","type":"create","title":"Test task with high priority","status":"open","priority":1}
+{"id":"51209d35","ts":"2026-01-19T17:24:17.537511Z","type":"create","title":"Test task with critical priority","status":"open","priority":0}
+{"id":"7b6aa635","ts":"2026-01-19T17:24:17.541255Z","type":"create","title":"Test task with low priority","status":"open","priority":3}
+{"id":"69448591","ts":"2026-01-19T17:28:16.151666Z","type":"create","title":"Blocked task","status":"open","priority":1,"deps":["51209d35"]}
+{"id":"51209d35","ts":"2026-01-19T17:28:34.401242Z","type":"delete"}
+{"id":"1b4aa0bd","ts":"2026-01-19T17:28:34.405344Z","type":"delete"}
+{"id":"7b6aa635","ts":"2026-01-19T17:28:34.409396Z","type":"delete"}
+{"id":"69448591","ts":"2026-01-19T17:28:34.413566Z","type":"delete"}
+{"id":"4d177ec9","ts":"2026-01-19T17:29:02.798746Z","type":"status","status":"done","resolution":"completed","commit":"9b0351f"}
