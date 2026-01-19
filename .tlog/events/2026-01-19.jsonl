@@ -9,3 +9,6 @@
 {"id":"7b6aa635","ts":"2026-01-19T17:28:34.409396Z","type":"delete"}
 {"id":"69448591","ts":"2026-01-19T17:28:34.413566Z","type":"delete"}
 {"id":"4d177ec9","ts":"2026-01-19T17:29:02.798746Z","type":"status","status":"done","resolution":"completed","commit":"9b0351f"}
+{"id":"f43d2c46","ts":"2026-01-19T17:40:57.738859Z","type":"create","title":"Add sync hint to tlog prime","status":"open","description":"Add a hint suggesting agents use 'tlog sync -m \u003cmessage\u003e' periodically to commit tlog state."}
+{"id":"f43d2c46","ts":"2026-01-19T17:40:57.748955Z","type":"status","status":"in_progress"}
+{"id":"f43d2c46","ts":"2026-01-19T17:41:41.112179Z","type":"status","status":"done","resolution":"completed","commit":"1ea428a"}
