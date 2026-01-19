@@ -1,9 +1,11 @@
 # Agent Instructions
 
+**You are building a tool for yourself.** tlog's primary users are AI coding agents like you. When making decisions, ask: "Would this make my job easier?"
+
 ## Philosophy
 
-- Main user is AI coding agents — design for agent ergonomics first
-- Unix philosophy — task management for AI agents, nothing else
+- You are the user — design for your own ergonomics first
+- Unix philosophy — task management, nothing else
 - Keep it simple — resist feature bloat
 - Labels are markers, not workflow — no enforcement, just conventions
 - No agent identity — track tasks, not who's working on them
