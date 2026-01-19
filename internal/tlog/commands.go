@@ -712,6 +712,8 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		sb.WriteString("\nTips:\n")
 		sb.WriteString("  --description  sets what the task is (mutable, overwrites)\n")
 		sb.WriteString("  --note         logs what happened (append-only)\n")
+		sb.WriteString("  --for <id>     creates a subtask that blocks the parent\n")
+		sb.WriteString("  partial IDs    work if unambiguous (e.g., \"tlog done 4d1\")\n")
 		sb.WriteString("  sync -m \"...\" periodically to commit tlog state to git\n")
 		sb.WriteString("\nPriority levels (do highest available first):\n")
 		sb.WriteString("  [critical]  blocking others or time-sensitive\n")
