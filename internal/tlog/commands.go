@@ -631,7 +631,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 	tasks := ComputeState(events)
 
 	// Categorize tasks
-	var ready, inProgress, blocked, recentDone []*Task
+	var ready, inProgress, blocked []*Task
 	for _, t := range tasks {
 		if t.Deleted {
 			continue
@@ -639,8 +639,6 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		switch t.Status {
 		case StatusInProgress:
 			inProgress = append(inProgress, t)
-		case StatusDone:
-			recentDone = append(recentDone, t)
 		case StatusOpen:
 			if t.Priority == PriorityBacklog {
 				continue // skip backlog
@@ -664,14 +662,6 @@ func CmdPrime(root string, cliReference string) (string, error) {
 	// Sort ready by priority then created
 	sortTasksByPriorityCreated(ready)
 	sortTasksByPriorityCreated(blocked)
-
-	// Sort recentDone by updated (most recent first), limit to 3
-	sort.Slice(recentDone, func(i, j int) bool {
-		return recentDone[i].Updated.After(recentDone[j].Updated)
-	})
-	if len(recentDone) > 3 {
-		recentDone = recentDone[:3]
-	}
 
 	// Count stats
 	var openCount, inProgressCount, doneCount int
@@ -715,6 +705,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		sb.WriteString("  --for <id>     creates a subtask that blocks the parent\n")
 		sb.WriteString("  partial IDs    work if unambiguous (e.g., \"tlog done 4d1\")\n")
 		sb.WriteString("  sync -m \"...\" periodically to commit tlog state to git\n")
+		sb.WriteString("  recent work    tlog list --status done | git log --oneline\n")
 		sb.WriteString("\nPriority levels (do highest available first):\n")
 		sb.WriteString("  [critical]  blocking others or time-sensitive\n")
 		sb.WriteString("  [high]      important, do soon\n")
@@ -756,18 +747,6 @@ func CmdPrime(root string, cliReference string) (string, error) {
 				}
 			}
 			sb.WriteString(fmt.Sprintf("  %s  %s%s (waiting: %s)\n", t.ID, formatPriorityPrefix(t.Priority), t.Title, strings.Join(waitingOn, ", ")))
-		}
-	}
-
-	// Recent completions (context)
-	if len(recentDone) > 0 {
-		sb.WriteString("\nRecent:\n")
-		for _, t := range recentDone {
-			if t.Commit != "" {
-				sb.WriteString(fmt.Sprintf("  %s  %s (%s)\n", t.ID, t.Title, t.Commit))
-			} else {
-				sb.WriteString(fmt.Sprintf("  %s  %s\n", t.ID, t.Title))
-			}
 		}
 	}
 
