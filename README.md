@@ -50,8 +50,7 @@ tlog dep <id> --needs <dep-id>         # add dependency
 tlog dep <id> --remove <dep-id>        # remove dependency
 
 # Maintenance
-tlog sync                    # commit .tlog to git
-tlog sync -m "message"       # commit with custom message
+tlog sync "message"          # commit .tlog to git
 tlog prune                   # compact files and remove done tasks
 tlog labels                  # show labels in use
 ```

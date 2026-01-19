@@ -497,11 +497,12 @@ func init() {
 	})
 
 	// Sync command
-	syncCmd := &cobra.Command{
-		Use:   "sync",
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "sync <message>",
 		Short: "Commit .tlog to git",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			message, _ := cmd.Flags().GetString("message")
+			message := args[0]
 
 			root, err := tlog.RequireTlog()
 			if err != nil {
@@ -513,9 +514,7 @@ func init() {
 			}
 			fmt.Printf("Synced: %s\n", result["message"])
 		},
-	}
-	syncCmd.Flags().StringP("message", "m", "", "Commit message")
-	rootCmd.AddCommand(syncCmd)
+	})
 
 	// Compact command
 	pruneCmd := &cobra.Command{

@@ -704,7 +704,7 @@ func CmdPrime(root string, cliReference string) (string, error) {
 		sb.WriteString("  --note         logs what happened (append-only)\n")
 		sb.WriteString("  --for <id>     creates a subtask that blocks the parent\n")
 		sb.WriteString("  partial IDs    work if unambiguous (e.g., \"tlog done 4d1\")\n")
-		sb.WriteString("  sync -m \"...\" periodically to commit tlog state to git\n")
+		sb.WriteString("  sync \"...\"    periodically to commit tlog state to git\n")
 		sb.WriteString("  recent work    tlog list --status done | git log --oneline\n")
 		sb.WriteString("\nPriority levels (do highest available first):\n")
 		sb.WriteString("  [critical]  blocking others or time-sensitive\n")
@@ -817,10 +817,6 @@ func CmdLabels(root string) (map[string]interface{}, error) {
 
 // CmdSync commits .tlog to git
 func CmdSync(root, message string) (map[string]interface{}, error) {
-	if message == "" {
-		message = "tlog: sync tasks"
-	}
-
 	// git add .tlog/
 	addCmd := exec.Command("git", "add", root)
 	if err := addCmd.Run(); err != nil {

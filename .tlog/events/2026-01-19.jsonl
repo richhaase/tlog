@@ -24,3 +24,8 @@
 {"id":"8bfc7264","ts":"2026-01-19T18:18:12.60164Z","type":"update"}
 {"id":"8bfc7264","ts":"2026-01-19T18:18:58.448217Z","type":"status","status":"done","resolution":"completed","commit":"59d51f7"}
 {"id":"8bfc7264","ts":"2026-01-19T18:25:50.581143Z","type":"update","notes":"Removed hints logic per feedback - labels are conventions, not enforcement"}
+{"id":"c2c62e2c","ts":"2026-01-19T18:36:36.410402Z","type":"create","title":"review and update README.md and CLAUDE.md, if needed to reflect current state","status":"open"}
+{"id":"c2c62e2c","ts":"2026-01-19T18:45:06.823944Z","type":"status","status":"in_progress"}
+{"id":"c2c62e2c","ts":"2026-01-19T18:48:40.065237Z","type":"status","status":"done","resolution":"completed","commit":"7eb2c98"}
+{"id":"7f3cc9fb","ts":"2026-01-19T18:59:01.015496Z","type":"create","title":"make tlog sync require message as positional argument","status":"open","description":"Remove the -m flag from sync command. Message should be a required positional argument instead: tlog sync \"message\" instead of tlog sync -m \"message\""}
+{"id":"7f3cc9fb","ts":"2026-01-19T18:59:19.295054Z","type":"status","status":"in_progress"}
